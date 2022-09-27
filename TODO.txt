@@ -1,0 +1,20 @@
+TO DO list
+----------
+
+- Environment
+reinstall Hugging Face
+
+- Baseline
+write HF training script for baseline - RobeCzech with CNEC 2.0 and CHNEC datasets
+test it locally, small batches initially
+test it on Metacentrum - interactive job
+adapt qsub script
+run training on Metacentrum first in fast 24 h queue, if necessary in slow queue
+
+- Image dataset
+
+- Text dataset
+
+- LamBERT model adjustment
+
+- LUKE model adjustment
