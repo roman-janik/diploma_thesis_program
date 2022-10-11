@@ -11,6 +11,16 @@ test it on Metacentrum - interactive job
 adapt qsub script
 run training on Metacentrum first in fast 24 h queue, if necessary in slow queue
 
+- Check CHNEC dataset
+There are some errors in dataset, at least in lines 2752-2842 in validation dataset (CHNEC_v0.1_dev.conll) - person
+surnames begin with I-p tag, B-p missing - possible solution -> patch file?
+Also wrong annotation on line 16853 in train split: "Biůrger	DE	_	I-p" - lemma (2.) and language (3.) columns
+are swapped
+
+- Check RObeCzech vocab.json:
+The OrderedVocab you are attempting to save contains a hole for index 51959, your vocabulary could be corrupted !
+
+
 - Image dataset
 
 - Text dataset
