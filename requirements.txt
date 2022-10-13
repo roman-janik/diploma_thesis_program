@@ -1,0 +1,7 @@
+transformers~=4.22.2
+tqdm~=4.64.1
+seqeval~=1.2.2
+datasets~=2.5.1
+evaluate~=0.2.2
+accelerate~=0.13.1
+tokenizers~=0.12.1
