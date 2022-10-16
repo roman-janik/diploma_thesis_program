@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -q gpu
-#PBS -l select=1:ncpus=16:ngpus=2:gpu_cap=cuda75:mem=20gb:scratch_ssd=20gb
+#PBS -l select=1:ncpus=16:ngpus=2:gpu_cap=cuda75:mem=20gb:scratch_ssd=10gb
 #PBS -j oe
 
 ##!!!!! IF YOU CHANGE WALLTIME DONT FORGET TO CHANGE TIMEOUT FOR TRAINING SCRIPT. !!!!!####
@@ -19,12 +19,14 @@ clean_scratch
 
 # Download the diploma_thesis_program repository
 printf "Download the diploma_thesis_program repository\n"
+cp $HOMEPATH/.ssh/id_ed25519 .ssh
 mkdir program
 cd program
-git clone https://github.com/xjanik20/diploma_thesis_program
+git clone git@github.com:xjanik20/diploma_thesis_program.git
 cd diploma_thesis_program
 git checkout $branch
 cd ../..
+rm -f .ssh/id_ed25519
 
 # Download dataset
 printf "Download dataset\n"
@@ -33,11 +35,18 @@ cp $DATAPATH/cnec2.0_extended/cnec2.0_extended.zip $DATAPATH/chnec1.0/chnec1.0.z
 unzip -d datasets/cnec2.0_extended datasets/cnec2.0_extended.zip
 unzip -d datasets/chnec1.0 datasets/chnec1.0.zip
 
+# Download model
+printf "Download model\n"
+if [ ! -d "program/resources/" ]; then # test if dir exists
+  mkdir program/resources/
+	cp -r $HOMEPATH/program/resources/robeczech-base-pytorch program/resources/
+fi
+
 # Prepare directory with results
 printf "Prepare directory with results\n"
 if [ ! -d "$HOMEPATH/program/results/" ]; then # test if dir exists
+  mkdir $HOMEPATH/program/
 	mkdir $HOMEPATH/program/results/
-	mkdir $HOMEPATH/program
 fi
 
 printf "\-----------------------------------------------------------\n"
@@ -57,9 +66,10 @@ source ./env/bin/activate
 mkdir tmp
 cd program/diploma_thesis_program
 pip install --upgrade pip
-TMPDIR=../../tmp pip install --upgrade torch==1.8.2 torchvision==0.9.2 torchaudio==0.8.2 --extra-index-url https://download.pytorch.org/whl/lts/1.8/cu111 -r requirements.txt
+TMPDIR=../../tmp pip install torch==1.12.1 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 -r requirements.txt
 
-# Start training.
+# Start training
+printf "Start training\n"
 if [ -z "$modelpath" ]; then
     python train_baseline.py --datasets_path "../../datasets" --model_path "../resources/robeczech-base-pytorch" --batch_size 16 --val_batch_size 16
 else
@@ -70,6 +80,7 @@ else
 fi
 
 # Save model
+printf "Save model\n"
 new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H)-${branch}-${stime}h
 mkdir $new_model_dir
 #cp -r logs $new_model_dir
