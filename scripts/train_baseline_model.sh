@@ -19,14 +19,12 @@ clean_scratch
 
 # Download the diploma_thesis_program repository
 printf "Download the diploma_thesis_program repository\n"
-cp $HOMEPATH/.ssh/id_ed25519 $HOME/.ssh
 mkdir program
 cd program
 git clone git@github.com:xjanik20/diploma_thesis_program.git
 cd diploma_thesis_program
 git checkout $branch
 cd ../..
-rm -f $HOME/.ssh/id_ed25519
 
 # Download dataset
 printf "Download dataset\n"
@@ -67,7 +65,7 @@ pip install --upgrade pip
 TMPDIR=../../tmp pip install torch==1.12.1 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 -r requirements.txt
 
 # Start training
-printf "Start training\n"
+printf "\nStart training\n"
 if [ -z "$modelpath" ]; then
     python train_baseline.py --datasets_path "../../datasets" --model_path "../resources/robeczech-base-pytorch" --batch_size 16 --val_batch_size 16
 else
@@ -78,7 +76,7 @@ else
 fi
 
 # Save model
-printf "Save model\n"
+printf "\nSave model\n"
 new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H-%M)-${branch}-${stime}h
 mkdir $new_model_dir
 #cp -r logs $new_model_dir
