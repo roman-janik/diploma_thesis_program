@@ -12,6 +12,8 @@ HOMEPATH=/storage/praha1/home/$PBS_O_LOGNAME
 DATAPATH=$HOMEPATH/datasets/            # folder with datasets
 RESPATH=$HOMEPATH/program/results/      # store results in this folder
 
+pwd
+ls -la .ssh
 cd $SCRATCHDIR
 
 # clean the SCRATCH directory
@@ -19,6 +21,7 @@ clean_scratch
 
 # Download the diploma_thesis_program repository
 printf "Download the diploma_thesis_program repository\n"
+cp $HOMEPATH/.ssh/id_ed25519 $HOME/.ssh
 mkdir program
 cd program
 git clone git@github.com:xjanik20/diploma_thesis_program.git
