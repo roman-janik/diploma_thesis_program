@@ -77,6 +77,7 @@ else
     cp -r ${modelpath}/* ./logs/latest_model
     python script_na_trenovani
 fi
+printf "Training exit code: "$?"\n"
 
 # Save model
 printf "\nSave model\n"
