@@ -186,7 +186,6 @@ def main():
     for epoch in range(num_train_epochs):
         # Training
         model.train()
-        i = 0
         for batch in train_dataloader:
             outputs = model(**batch)
             loss = outputs.loss
@@ -196,9 +195,6 @@ def main():
             lr_scheduler.step()
             optimizer.zero_grad()
             progress_bar.update(1)
-            i += 1
-            if i > 10:
-                break
 
         # Evaluation
         model.eval()
@@ -218,9 +214,6 @@ def main():
 
             true_predictions, true_labels = postprocess(predictions_gathered, labels_gathered)
             metric.add_batch(predictions=true_predictions, references=true_labels)
-            i += 1
-            if i > 10:
-                break
 
         results = metric.compute()
         print(
