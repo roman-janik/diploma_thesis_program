@@ -70,7 +70,7 @@ TMPDIR=../../tmp pip install torch==1.12.1 torchvision torchaudio --extra-index-
 # Start training
 printf "\nStart training\n"
 if [ -z "$modelpath" ]; then
-    python train_baseline.py --datasets_path "../../datasets" --model_path "../resources/robeczech-base-pytorch" --batch_size 16 --val_batch_size 16
+    python train_baseline.py --datasets_path "../../datasets" --model_path "../resources/robeczech-base-pytorch" --batch_size 32 --val_batch_size 32
 else
     mkdir ./logs
     mkdir ./logs/latest_model
