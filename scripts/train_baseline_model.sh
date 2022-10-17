@@ -19,14 +19,14 @@ clean_scratch
 
 # Download the diploma_thesis_program repository
 printf "Download the diploma_thesis_program repository\n"
-cp $HOMEPATH/.ssh/id_ed25519 .ssh
+cp $HOMEPATH/.ssh/id_ed25519 $HOME/.ssh
 mkdir program
 cd program
 git clone git@github.com:xjanik20/diploma_thesis_program.git
 cd diploma_thesis_program
 git checkout $branch
 cd ../..
-rm -f .ssh/id_ed25519
+rm -f $HOME/.ssh/id_ed25519
 
 # Download dataset
 printf "Download dataset\n"
@@ -37,10 +37,8 @@ unzip -d datasets/chnec1.0 datasets/chnec1.0.zip
 
 # Download model
 printf "Download model\n"
-if [ ! -d "program/resources/" ]; then # test if dir exists
-  mkdir program/resources/
-	cp -r $HOMEPATH/program/resources/robeczech-base-pytorch program/resources/
-fi
+mkdir program/resources/
+cp -r $HOMEPATH/program/resources/robeczech-base-pytorch program/resources/
 
 # Prepare directory with results
 printf "Prepare directory with results\n"
