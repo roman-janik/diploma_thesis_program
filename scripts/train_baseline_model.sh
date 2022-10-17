@@ -79,7 +79,7 @@ fi
 
 # Save model
 printf "Save model\n"
-new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H)-${branch}-${stime}h
+new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H-%M)-${branch}-${stime}h
 mkdir $new_model_dir
 #cp -r logs $new_model_dir
 cp -r ../results $new_model_dir
