@@ -15,6 +15,7 @@ from accelerate import Accelerator
 import evaluate
 import numpy as np
 from tqdm.auto import tqdm
+import pandas as pd
 
 
 def parse_arguments():
@@ -91,23 +92,16 @@ def prepare_datasets(datasets_path: str, model_path: str):
         remove_columns=cnec_chnec_dataset_train.column_names,
     )
 
-    t_cnec_chnec_dataset_test = cnec_chnec_dataset_test.map(
-        tokenize_and_align_labels,
-        batched=True,
-        remove_columns=cnec_chnec_dataset_train.column_names,
-    )
-
-    return tokenizer, label_names, {
+    return tokenizer, label_names, cnec_chnec_dataset_test, {
                     "train": t_cnec_chnec_dataset_train,
-                    "validation": t_cnec_chnec_dataset_validation,
-                    "test": t_cnec_chnec_dataset_test
+                    "validation": t_cnec_chnec_dataset_validation
     }
 
 
 def main():
     args = parse_arguments()
 
-    tokenizer, label_names, tokenized_datasets = prepare_datasets(args.datasets_path, args.model_path)
+    tokenizer, label_names, test_dataset, tokenized_datasets = prepare_datasets(args.datasets_path, args.model_path)
     data_collator = transformers.DataCollatorForTokenClassification(tokenizer=tokenizer)
 
     train_dataloader = torch.utils.data.DataLoader(
@@ -224,12 +218,25 @@ def main():
             },
         )
 
-        # Save and upload
+        # Save
         accelerator.wait_for_everyone()
         unwrapped_model = accelerator.unwrap_model(model)
         unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
         if accelerator.is_main_process:
             tokenizer.save_pretrained(output_dir)
+
+    # Test set evaluation
+    task_evaluator = evaluate.evaluator("token-classification")
+    # test_model = transformers.AutoModelForTokenClassification.from_pretrained(
+    #     os.path.join(output_dir, "2022-10-17-22-36-main-22h/results")
+    # )
+
+    test_result = task_evaluator.compute(model_or_pipeline=unwrapped_model, data=test_dataset, tokenizer=tokenizer, metric="seqeval")
+    # test_result = task_evaluator.compute(model_or_pipeline=test_model, data=test_dataset, tokenizer=tokenizer, metric="seqeval")
+    df = pd.DataFrame(test_result).loc["number"]
+    print(df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
+    with open(os.path.join(output_dir, "test_eval_results.txt"), 'w') as outfile:
+        outfile.write(df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
 
 
 if __name__ == "__main__":
