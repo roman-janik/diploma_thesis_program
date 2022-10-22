@@ -78,8 +78,9 @@ else
     mkdir ./logs/latest_model
     cp -r ${modelpath}/* ./logs/latest_model
     python script_na_trenovani
+    printf "Training exit code: "$?"\n"
 fi
-printf "Training exit code: "$?"\n"
+
 
 # Save model
 printf "\nSave model\n"
