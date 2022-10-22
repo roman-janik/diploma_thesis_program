@@ -1,29 +1,37 @@
 TO DO list
 ----------
+○ = done
 
 - Environment
-reinstall Hugging Face
+○ reinstall Hugging Face
 
 - Baseline
-write HF training script for baseline - RobeCzech with CNEC 2.0 and CHNEC datasets
-test it locally, small batches initially
-test it on Metacentrum - interactive job
-adapt qsub script
-run training on Metacentrum first in fast 24 h queue, if necessary in slow queue
+○ write HF training script for baseline - RobeCzech with CNEC 2.0 and CHNEC datasets
+○ test it locally, small batches initially
+○ test it on Metacentrum - interactive job
+○ adapt qsub script
+○ run training on Metacentrum first in fast 24 h queue, if necessary in slow queue
+fix pipeline problem in ner_pipeline:
+fast_tokenizer = TokenizerFast.from_file(fast_tokenizer_file)
+Exception: data did not match any variant of untagged enum ModelWrapper at line 103785 column 3
+run experiments on baseline: only CNEC 2.0, different learning rate, non-linear learning rate, more epochs, etc.
 
 - Check CHNEC dataset
 There are some errors in dataset, at least in lines 2752-2842 in validation dataset (CHNEC_v0.1_dev.conll) - person
 surnames begin with I-p tag, B-p missing - possible solution -> patch file?
-Also wrong annotation on line 16853 in train split: "Biůrger	DE	_	I-p" - lemma (2.) and language (3.) columns
+○ Also wrong annotation on line 16853 in train split: "Biůrger	DE	_	I-p" - lemma (2.) and language (3.) columns
 are swapped
 
 - Check RObeCzech vocab.json:
-The OrderedVocab you are attempting to save contains a hole for index 51959, your vocabulary could be corrupted !
-
+○ The OrderedVocab you are attempting to save contains a hole for index 51959, your vocabulary could be corrupted !
+Fix: index of word 51960 changed to 51959, warning is gone
 
 - Image dataset
+download image documents: newspapers, chronicles, registry books, forms
+annotate image documents in LabelStudio
 
 - Text dataset
+prepare loading script for SumeCzech-NER dataset
 
 - LamBERT model adjustment
 
