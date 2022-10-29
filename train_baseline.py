@@ -62,7 +62,6 @@ def prepare_datasets(datasets_path: str, model_path: str):
     cnec_chnec_dataset_train = datasets.concatenate_datasets([cnec_dataset["train"], chnec_dataset["train"]])
     cnec_chnec_dataset_validation = datasets.concatenate_datasets(
         [cnec_dataset["validation"], chnec_dataset["validation"]])
-    cnec_chnec_dataset_test = datasets.concatenate_datasets([cnec_dataset["test"], chnec_dataset["test"]])
 
     # initialize tokenizer
     tokenizer = transformers.AutoTokenizer.from_pretrained(model_path, add_prefix_space=True)
@@ -92,16 +91,19 @@ def prepare_datasets(datasets_path: str, model_path: str):
         remove_columns=cnec_chnec_dataset_train.column_names,
     )
 
-    return tokenizer, label_names, cnec_chnec_dataset_test, {
-                    "train": t_cnec_chnec_dataset_train,
-                    "validation": t_cnec_chnec_dataset_validation
+    return tokenizer, label_names, {
+        "cnec": cnec_dataset["test"],
+        "chnec": chnec_dataset["test"]
+    }, {
+        "train": t_cnec_chnec_dataset_train,
+        "validation": t_cnec_chnec_dataset_validation
     }
 
 
 def main():
     args = parse_arguments()
 
-    tokenizer, label_names, test_dataset, tokenized_datasets = prepare_datasets(args.datasets_path, args.model_path)
+    tokenizer, label_names, test_datasets, tokenized_datasets = prepare_datasets(args.datasets_path, args.model_path)
     data_collator = transformers.DataCollatorForTokenClassification(tokenizer=tokenizer)
 
     train_dataloader = torch.utils.data.DataLoader(
@@ -231,12 +233,26 @@ def main():
     #     os.path.join(output_dir, "2022-10-17-22-36-main-22h/results")
     # )
 
-    test_result = task_evaluator.compute(model_or_pipeline=unwrapped_model, data=test_dataset, tokenizer=tokenizer, metric="seqeval")
+    test_result_cnec = task_evaluator.compute(model_or_pipeline=unwrapped_model, data=test_datasets.cnec,
+                                              tokenizer=tokenizer, metric="seqeval")
+    test_result_chnec = task_evaluator.compute(model_or_pipeline=unwrapped_model, data=test_datasets.chnec,
+                                               tokenizer=tokenizer, metric="seqeval")
     # test_result = task_evaluator.compute(model_or_pipeline=test_model, data=test_dataset, tokenizer=tokenizer, metric="seqeval")
-    df = pd.DataFrame(test_result).loc["number"]
-    print(df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
-    with open(os.path.join(output_dir, "test_eval_results.txt"), 'w') as outfile:
-        outfile.write(df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
+    cnec_df = pd.DataFrame(test_result_cnec).loc["number"]
+    chnec_df = pd.DataFrame(test_result_chnec).loc["number"]
+    print("Test set evaluation:")
+    print(cnec_df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
+    print(chnec_df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
+    with open(os.path.join(output_dir, "experiment_results.txt"), 'w') as outfile:
+        outfile.write("Validation set evaluation:\n")
+        last_val_results = {
+                key: results[key]
+                for key in ["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]
+            }
+        outfile.write(f"Last epoch {epoch}:\n{last_val_results}")
+        outfile.write("Test set evaluation:\n")
+        outfile.write(cnec_df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
+        outfile.write(chnec_df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
 
 
 if __name__ == "__main__":
