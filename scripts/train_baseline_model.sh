@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -q gpu
-#PBS -l select=1:ncpus=16:ngpus=2:gpu_cap=cuda75:mem=20gb:scratch_ssd=10gb
+#PBS -l select=1:ncpus=16:ngpus=2:gpu_cap=cuda75:gpu_mem=20gb:mem=20gb:scratch_ssd=10gb
 #PBS -j oe
 
 ##!!!!! IF YOU CHANGE WALLTIME DONT FORGET TO CHANGE TIMEOUT FOR TRAINING SCRIPT. !!!!!####
