@@ -16,16 +16,38 @@ import evaluate
 import numpy as np
 from tqdm.auto import tqdm
 import pandas as pd
+from yaml import safe_load
+import logging
+import datetime
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--datasets_path', required=True, help='Path to datasets.')
-    parser.add_argument('--model_path', required=True, help='Path to model.')
-    parser.add_argument('--batch_size', required=True, help='Training batch size.', type=int)
-    parser.add_argument('--val_batch_size', required=True, help='Evaluation batch size.', type=int)
+    parser.add_argument('--config', required=True, help='Training configuration file.')
     args = parser.parse_args()
     return args
+
+
+def log_msg(msg: str):
+    print(msg)
+    logging.info(msg)
+
+
+def log_summary(exp_name: str, config: dict):
+    log_msg("{:<24}{}\n{:<24}{}".format(
+        "Name:", exp_name.lstrip("exp_configs/").rstrip(".yaml"), "Description:", config["desc"]))
+    ct = datetime.datetime.now()
+    log_msg("{:<24}{}\n{:<24}{}\n{:<24}{}\n".format(
+        "Start time:", ct, "Model:", config["model"]["name"],
+        "Datasets:", [dts["name"] for dts in config["datasets"].values()]))
+
+    cf_t = config["training"]
+    log_msg("Parameters:\n{:<24}{}\n{:<24}{}\n{:<24}{}".format(
+            "Num train epochs:", cf_t["num_train_epochs"], "Batch size:", cf_t["batch_size"],
+            "Val batch size", cf_t["val_batch_size"]))
+    log_msg("{:<24}{}\n{:<24}{}\n{:<24}{}".format(
+        "Learning rate:", cf_t["optimizer"]["learning_rate"], "Lr scheduler:",
+        cf_t["lr_scheduler"]["name"], "Num warmup steps:", cf_t["lr_scheduler"]["num_warmup_steps"]))
 
 
 def align_labels_with_tokens(labels, word_ids):
@@ -51,20 +73,20 @@ def align_labels_with_tokens(labels, word_ids):
     return new_labels
 
 
-def prepare_datasets(datasets_path: str, model_path: str):
-    cnec_dir = "cnec2.0_extended"
-    chnec_dir = "chnec1.0"
-    cnec_dataset = datasets.load_from_disk(os.path.join(datasets_path, cnec_dir))
-    chnec_dataset = datasets.load_from_disk(os.path.join(datasets_path, chnec_dir))
-    label_names = cnec_dataset["train"].features["ner_tags"].feature.names
+def prepare_datasets(config: dict):
+    raw_datasets = {key: datasets.load_from_disk(value["path"]) for (key, value) in config["datasets"].items()}
+    label_names = raw_datasets["cnec"]["train"].features["ner_tags"].feature.names
 
     # concatenate datasets
-    cnec_chnec_dataset_train = datasets.concatenate_datasets([cnec_dataset["train"], chnec_dataset["train"]])
-    cnec_chnec_dataset_validation = datasets.concatenate_datasets(
-        [cnec_dataset["validation"], chnec_dataset["validation"]])
+    concat_dataset_train = datasets.concatenate_datasets(
+        [raw_dataset["train"] for raw_dataset in raw_datasets.values()]
+    )
+    concat_dataset_validation = datasets.concatenate_datasets(
+        [raw_dataset["validation"] for raw_dataset in raw_datasets.values()]
+    )
 
     # initialize tokenizer
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_path, add_prefix_space=True)
+    tokenizer = transformers.AutoTokenizer.from_pretrained(config["model"]["path"], add_prefix_space=True)
 
     def tokenize_and_align_labels(examples):
         tokenized_inputs = tokenizer(
@@ -79,49 +101,63 @@ def prepare_datasets(datasets_path: str, model_path: str):
         tokenized_inputs["labels"] = new_labels
         return tokenized_inputs
 
-    t_cnec_chnec_dataset_train = cnec_chnec_dataset_train.map(
+    t_concat_dataset_train = concat_dataset_train.map(
         tokenize_and_align_labels,
         batched=True,
-        remove_columns=cnec_chnec_dataset_train.column_names,
+        remove_columns=concat_dataset_train.column_names,
     )
 
-    t_cnec_chnec_dataset_validation = cnec_chnec_dataset_validation.map(
+    t_concat_dataset_validation = concat_dataset_validation.map(
         tokenize_and_align_labels,
         batched=True,
-        remove_columns=cnec_chnec_dataset_train.column_names,
+        remove_columns=concat_dataset_train.column_names,
     )
 
-    return tokenizer, label_names, {
-        "cnec": cnec_dataset["test"],
-        "chnec": chnec_dataset["test"]
-    }, {
-        "train": t_cnec_chnec_dataset_train,
-        "validation": t_cnec_chnec_dataset_validation
+    raw_datasets_test = {dataset_name: raw_dataset["test"] for (dataset_name, raw_dataset) in raw_datasets.items()}
+
+    return tokenizer, label_names, raw_datasets_test, {
+        "train": t_concat_dataset_train,
+        "validation": t_concat_dataset_validation
     }
 
 
+# noinspection PyArgumentList
 def main():
+    output_dir = "../results"
+    model_dir = "../results/model"
+    log_dir = "../results/logs"
     args = parse_arguments()
 
-    tokenizer, label_names, test_datasets, tokenized_datasets = prepare_datasets(args.datasets_path, args.model_path)
+    # Load config file
+    with open(args.config, 'r') as config_file:
+        config = safe_load(config_file)
+
+    # Start logging, print experiment configuration
+    logging.basicConfig(filename=os.path.join(output_dir, "experiment_results.txt"), level=logging.INFO,
+                        encoding='utf-8', format='%(message)s')
+    log_msg("Experiment summary:\n")
+    log_summary(args.config, config)
+    log_msg("-" * 80 + "\n")
+
+    tokenizer, label_names, test_datasets, tokenized_datasets = prepare_datasets(config)
     data_collator = transformers.DataCollatorForTokenClassification(tokenizer=tokenizer)
 
     train_dataloader = torch.utils.data.DataLoader(
         tokenized_datasets["train"],
         shuffle=True,
         collate_fn=data_collator,
-        batch_size=args.batch_size,
+        batch_size=config["training"]["batch_size"],
     )
 
     eval_dataloader = torch.utils.data.DataLoader(
-        tokenized_datasets["validation"], collate_fn=data_collator, batch_size=args.val_batch_size
+        tokenized_datasets["validation"], collate_fn=data_collator, batch_size=config["training"]["val_batch_size"]
     )
 
-    id2label = {str(i): label for i, label in enumerate(label_names)}
+    id2label = {i: label for i, label in enumerate(label_names)}
     label2id = {v: k for k, v in id2label.items()}
 
     model = transformers.AutoModelForTokenClassification.from_pretrained(
-        args.model_path,
+        config["model"]["path"],
         id2label=id2label,
         label2id=label2id,
     )
@@ -133,7 +169,7 @@ def main():
         predictions = np.argmax(logits, axis=-1)
 
         # Remove ignored index (special tokens) and convert to labels
-        true_labels = [[label_names[l] for l in label if l != -100] for label in labels]
+        true_labels = [[label_names[lb] for lb in label if lb != -100] for label in labels]
         true_predictions = [
             [label_names[p] for (p, l) in zip(prediction, label) if l != -100]
             for prediction, label in zip(predictions, labels)
@@ -146,21 +182,21 @@ def main():
             "accuracy": all_metrics["overall_accuracy"],
         }
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=2e-5)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=config["training"]["optimizer"]["learning_rate"])
 
     accelerator = Accelerator()
     model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
         model, optimizer, train_dataloader, eval_dataloader
     )
 
-    num_train_epochs = 5
+    num_train_epochs = config["training"]["num_train_epochs"]
     num_update_steps_per_epoch = len(train_dataloader)
     num_training_steps = num_train_epochs * num_update_steps_per_epoch
 
     lr_scheduler = transformers.get_scheduler(
-        "linear",
+        config["training"]["lr_scheduler"]["name"],
         optimizer=optimizer,
-        num_warmup_steps=0,
+        num_warmup_steps=config["training"]["lr_scheduler"]["num_warmup_steps"],
         num_training_steps=num_training_steps,
     )
 
@@ -177,8 +213,8 @@ def main():
         return true_labels, true_predictions
 
     progress_bar = tqdm(range(num_training_steps))
-    output_dir = "../results"
 
+    # Training loop
     for epoch in range(num_train_epochs):
         # Training
         model.train()
@@ -213,9 +249,9 @@ def main():
 
         results = metric.compute()
         print(
-            f"epoch {epoch}:",
+            f"\nepoch {epoch}:",
             {
-                key: results[f"overall_{key}"]
+                key: "{:.6f}".format(results[f"overall_{key}"])
                 for key in ["precision", "recall", "f1", "accuracy"]
             },
         )
@@ -223,36 +259,32 @@ def main():
         # Save
         accelerator.wait_for_everyone()
         unwrapped_model = accelerator.unwrap_model(model)
-        unwrapped_model.save_pretrained(output_dir, save_function=accelerator.save)
+        unwrapped_model.save_pretrained(model_dir, save_function=accelerator.save)
         if accelerator.is_main_process:
-            tokenizer.save_pretrained(output_dir)
+            tokenizer.save_pretrained(model_dir)
+
+    # Log last validation results
+    log_msg("-" * 80 + "\nExperiment results:\n")
+    log_msg("Validation set evaluation:")
+    last_val_results = {
+        key: "{:.6f}".format(results[key])
+        for key in ["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]
+    }
+    log_msg(f"Last epoch {epoch}:\n{last_val_results}\n")
 
     # Test set evaluation
+    log_msg("Test set evaluation:")
     task_evaluator = evaluate.evaluator("token-classification")
     # test_model = transformers.AutoModelForTokenClassification.from_pretrained(
-    #     os.path.join(output_dir, "2022-10-17-22-36-main-22h/results")
+    #     os.path.join(output_dir, "model")
     # )
 
-    test_result_cnec = task_evaluator.compute(model_or_pipeline=unwrapped_model, data=test_datasets.cnec,
-                                              tokenizer=tokenizer, metric="seqeval")
-    test_result_chnec = task_evaluator.compute(model_or_pipeline=unwrapped_model, data=test_datasets.chnec,
-                                               tokenizer=tokenizer, metric="seqeval")
-    # test_result = task_evaluator.compute(model_or_pipeline=test_model, data=test_dataset, tokenizer=tokenizer, metric="seqeval")
-    cnec_df = pd.DataFrame(test_result_cnec).loc["number"]
-    chnec_df = pd.DataFrame(test_result_chnec).loc["number"]
-    print("Test set evaluation:")
-    print(cnec_df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
-    print(chnec_df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
-    with open(os.path.join(output_dir, "experiment_results.txt"), 'w') as outfile:
-        outfile.write("Validation set evaluation:\n")
-        last_val_results = {
-                key: results[key]
-                for key in ["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]
-            }
-        outfile.write(f"Last epoch {epoch}:\n{last_val_results}")
-        outfile.write("Test set evaluation:\n")
-        outfile.write(cnec_df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
-        outfile.write(chnec_df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]])
+    for (dataset_name, test_dataset) in test_datasets.items():
+        test_result = task_evaluator.compute(model_or_pipeline=unwrapped_model, data=test_dataset,
+                                             tokenizer=tokenizer, metric="seqeval")
+        test_result_df = pd.DataFrame(test_result).loc["number"]
+        log_msg("{}:\n{}\n".format(config["datasets"][dataset_name]["name"],
+                                   test_result_df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]]))
 
 
 if __name__ == "__main__":
