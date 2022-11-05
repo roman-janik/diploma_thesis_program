@@ -1,0 +1,35 @@
+# Author: Roman Janík
+# Experiment YAML configuration file
+#
+# Notes:
+#  Paths are relative to training script working directory.
+#  Datasets are preprocessed to Hugging Face arrow format
+
+desc: "Baseline experiment. Learning rate scheduler is linear, training 5 epochs on combined CNEC and CHNEC."
+
+model:
+  name: "RobeCzech base PyTorch"
+  desc: "Czech version of RoBERTa transformer model. Hugging Face PyTorch type."
+  path: "../resources/robeczech-base-pytorch"
+
+datasets:
+  cnec:
+    name: "CNEC 2.0 CoNLL"
+    desc: "Czech Named Entity Corpus 2.0 CoNNL dataset. General-language Czech NER dataset."
+    path: "../../datasets/cnec2.0_extended"
+  chnec:
+    name: "CHNEC 1.0"
+    desc: "Czech Historical Named Entity Corpus 1.0 dataset. Historic-language Czech NER dataset."
+    path: "../../datasets/chnec1.0"
+
+training:
+  num_train_epochs: 5
+  batch_size: 16
+  val_batch_size: 16
+
+  optimizer:
+    learning_rate: 2.e-5
+  lr_scheduler:
+    name: "linear"
+    num_warmup_steps: 0
+    warmup_ratio: null
