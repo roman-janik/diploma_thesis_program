@@ -5,3 +5,4 @@ datasets~=2.5.1
 evaluate~=0.2.2
 accelerate~=0.13.1
 tokenizers~=0.12.1
+tensorboard~=2.10.1

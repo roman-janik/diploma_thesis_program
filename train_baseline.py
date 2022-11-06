@@ -11,14 +11,16 @@ import os
 import datasets
 import transformers
 import torch
-from accelerate import Accelerator
 import evaluate
 import numpy as np
-from tqdm.auto import tqdm
 import pandas as pd
-from yaml import safe_load
 import logging
 import datetime
+
+from accelerate import Accelerator
+from tqdm.auto import tqdm
+from yaml import safe_load
+from torch.utils.tensorboard import SummaryWriter
 
 
 def parse_arguments():
@@ -43,8 +45,8 @@ def log_summary(exp_name: str, config: dict):
 
     cf_t = config["training"]
     log_msg("Parameters:\n{:<24}{}\n{:<24}{}\n{:<24}{}".format(
-            "Num train epochs:", cf_t["num_train_epochs"], "Batch size:", cf_t["batch_size"],
-            "Val batch size", cf_t["val_batch_size"]))
+        "Num train epochs:", cf_t["num_train_epochs"], "Batch size:", cf_t["batch_size"],
+        "Val batch size", cf_t["val_batch_size"]))
     log_msg("{:<24}{}\n{:<24}{}\n{:<24}{}".format(
         "Learning rate:", cf_t["optimizer"]["learning_rate"], "Lr scheduler:",
         cf_t["lr_scheduler"]["name"], "Num warmup steps:", cf_t["lr_scheduler"]["num_warmup_steps"]))
@@ -139,6 +141,9 @@ def main():
     log_summary(args.config, config)
     log_msg("-" * 80 + "\n")
 
+    # Init tensorboard writer
+    writer = SummaryWriter(log_dir)
+
     tokenizer, label_names, test_datasets, tokenized_datasets = prepare_datasets(config)
     data_collator = transformers.DataCollatorForTokenClassification(tokenizer=tokenizer)
 
@@ -171,7 +176,7 @@ def main():
         # Remove ignored index (special tokens) and convert to labels
         true_labels = [[label_names[lb] for lb in label if lb != -100] for label in labels]
         true_predictions = [
-            [label_names[p] for (p, l) in zip(prediction, label) if l != -100]
+            [label_names[pr] for (pr, lb) in zip(prediction, label) if lb != -100]
             for prediction, label in zip(predictions, labels)
         ]
         all_metrics = metric.compute(predictions=true_predictions, references=true_labels)
@@ -205,9 +210,9 @@ def main():
         labels = labels.detach().cpu().clone().numpy()
 
         # Remove ignored index (special tokens) and convert to labels
-        true_labels = [[label_names[l] for l in label if l != -100] for label in labels]
+        true_labels = [[label_names[lb] for lb in label if lb != -100] for label in labels]
         true_predictions = [
-            [label_names[p] for (p, l) in zip(prediction, label) if l != -100]
+            [label_names[pr] for (pr, lb) in zip(prediction, label) if lb != -100]
             for prediction, label in zip(predictions, labels)
         ]
         return true_labels, true_predictions
@@ -218,9 +223,11 @@ def main():
     for epoch in range(num_train_epochs):
         # Training
         model.train()
-        for batch in train_dataloader:
+        for i, batch in enumerate(train_dataloader):
             outputs = model(**batch)
             loss = outputs.loss
+            if i % 500 == 499:
+                writer.add_scalar("Loss/train", loss, epoch)
             accelerator.backward(loss)
 
             optimizer.step()
@@ -252,9 +259,13 @@ def main():
             f"\nepoch {epoch}:",
             {
                 key: "{:.6f}".format(results[f"overall_{key}"])
-                for key in ["precision", "recall", "f1", "accuracy"]
+                for key in ["f1", "accuracy", "precision", "recall"]
             },
         )
+        writer.add_scalars("Metrics/train",
+                           {"f1": results["overall_f1"], "accuracy": results["overall_accuracy"],
+                            "precision": results["overall_precision"], "recall": results["overall_recall"]
+                            }, epoch)
 
         # Save
         accelerator.wait_for_everyone()
@@ -262,6 +273,8 @@ def main():
         unwrapped_model.save_pretrained(model_dir, save_function=accelerator.save)
         if accelerator.is_main_process:
             tokenizer.save_pretrained(model_dir)
+
+    writer.flush()
 
     # Log last validation results
     log_msg("-" * 80 + "\nExperiment results:\n")
@@ -284,7 +297,8 @@ def main():
                                              tokenizer=tokenizer, metric="seqeval")
         test_result_df = pd.DataFrame(test_result).loc["number"]
         log_msg("{}:\n{}\n".format(config["datasets"][dataset_name]["name"],
-                                   test_result_df[["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]]))
+                                   test_result_df[
+                                       ["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]]))
 
 
 if __name__ == "__main__":
