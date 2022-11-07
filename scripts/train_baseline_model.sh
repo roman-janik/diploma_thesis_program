@@ -30,7 +30,7 @@ clean_scratch
 
 # Clone the diploma_thesis_program repository
 printf "Clone the diploma_thesis_program repository\n"
-cp "$HOMEPATH"/.ssh/id_ed25519 "$HOME"/.ssh
+cp "$HOMEPATH"/.ssh/id_ed25519 "$HOMEPATH"/.ssh/known_hosts "$HOME"/.ssh
 printf "Print content of .ssh dir\n"
 ls -la "$HOME"/.ssh
 mkdir program
