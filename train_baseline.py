@@ -187,7 +187,10 @@ def main():
             "accuracy": all_metrics["overall_accuracy"],
         }
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=config["training"]["optimizer"]["learning_rate"])
+    cf_optimizer = config["training"]["optimizer"]
+    optimizer = torch.optim.AdamW(model.parameters(), lr=cf_optimizer["learning_rate"],
+                                  betas=(cf_optimizer["beta1"], cf_optimizer["beta2"]),
+                                  weight_decay=cf_optimizer["weight_decay"])
 
     accelerator = Accelerator()
     model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
@@ -201,7 +204,7 @@ def main():
     lr_scheduler = transformers.get_scheduler(
         config["training"]["lr_scheduler"]["name"],
         optimizer=optimizer,
-        num_warmup_steps=config["training"]["lr_scheduler"]["num_warmup_steps"],
+        num_warmup_steps=int(config["training"]["lr_scheduler"]["warmup_ratio"] * num_training_steps),
         num_training_steps=num_training_steps,
     )
 
@@ -218,6 +221,7 @@ def main():
         return true_labels, true_predictions
 
     progress_bar = tqdm(range(num_training_steps))
+    step = 0
 
     # Training loop
     for epoch in range(num_train_epochs):
@@ -230,10 +234,12 @@ def main():
                 writer.add_scalar("Loss/train", loss, epoch)
             accelerator.backward(loss)
 
+            writer.add_scalar("Learning_rate/train", lr_scheduler.get_last_lr()[0], step)
             optimizer.step()
             lr_scheduler.step()
             optimizer.zero_grad()
             progress_bar.update(1)
+            step += 1
 
         # Evaluation
         model.eval()
