@@ -5,7 +5,7 @@
 #  Paths are relative to training script working directory.
 #  Datasets are preprocessed to Hugging Face arrow format
 
-desc: "Baseline experiment. Learning rate scheduler is linear, training 5 epochs on combined CNEC and CHNEC."
+desc: "Learning rate set to 3e-5. Learning rate scheduler is linear, training 5 epochs on combined CNEC and CHNEC."
 
 model:
   name: "RobeCzech base PyTorch"
@@ -28,7 +28,7 @@ training:
   val_batch_size: 16
 
   optimizer:
-    learning_rate: 2.e-5
+    learning_rate: 3.e-5
     weight_decay: 0.
     beta1: 0.9
     beta2: 0.999
