@@ -76,28 +76,47 @@ cd program/diploma_thesis_program || exit 2
 pip install --upgrade pip
 TMPDIR=../../tmp pip install torch==1.12.1 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 -r requirements.txt
 
-# Start training
-printf "\nStart training\n"
-config_file="exp_configs/$config.yaml"
-if [ -z "$modelpath" ]; then
-    python train_baseline.py --config "$config_file"
-    printf "Training exit code: %s\n" "$?"
+# Prepare list of configurations
+if [ "$config" == "all" ]; then
+  config_list="exp_configs/*"
 else
-#    mkdir ./logs
-#    mkdir ./logs/latest_model
-#    cp -r ${modelpath}/* ./logs/latest_model
-    python script_na_trenovani
-    printf "Training exit code: %s\n" "$?"
+  if [ "${config:0:1}" == '[' ]; then # list of configs
+    config=${config#*[}
+    config=${config%]*}
+  fi
+
+  config_list=$(for cfg in $config
+  do
+    echo "exp_configs/$cfg.yaml"
+  done)
 fi
 
+# Run training and save results for configs in list of configurations
+for config_file in $config_list
+do
+  printf "\nConfig: %s\n" "${config_file#*/}"
 
-# Save results
-printf "\nSave results\n"
-new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H-%M)-${config}-${stime}h
-mkdir "$new_model_dir"
-cp -r ../results/* "$new_model_dir"
-cp "$config_file" "$new_model_dir"
+  # Start training
+  printf "Start training\n"
+  if [ -z "$modelpath" ]; then
+      python train_baseline.py --config "$config_file"
+      printf "Training exit code: %s\n" "$?"
+  else
+  #    mkdir ./logs
+  #    mkdir ./logs/latest_model
+  #    cp -r ${modelpath}/* ./logs/latest_model
+      python script_na_trenovani
+      printf "Training exit code: %s\n" "$?"
+  fi
+
+
+  # Save results
+  printf "\nSave results\n"
+  new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H-%M)-${config}-${stime}h
+  mkdir "$new_model_dir"
+  cp -r ../results/* "$new_model_dir"
+  cp "$config_file" "$new_model_dir"
+done
 
 # clean the SCRATCH directory
 clean_scratch
-
