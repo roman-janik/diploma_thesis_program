@@ -46,10 +46,11 @@ def log_summary(exp_name: str, config: dict):
     cf_t = config["training"]
     log_msg("Parameters:\n{:<24}{}\n{:<24}{}\n{:<24}{}".format(
         "Num train epochs:", cf_t["num_train_epochs"], "Batch size:", cf_t["batch_size"],
-        "Val batch size", cf_t["val_batch_size"]))
-    log_msg("{:<24}{}\n{:<24}{}\n{:<24}{}".format(
-        "Learning rate:", cf_t["optimizer"]["learning_rate"], "Lr scheduler:",
-        cf_t["lr_scheduler"]["name"], "Num warmup steps:", cf_t["lr_scheduler"]["num_warmup_steps"]))
+        "Val batch size:", cf_t["val_batch_size"]))
+    log_msg("{:<24}{}\n{:<24}{}\n{:<24}{}\n{:<24}{}".format(
+        "Learning rate:", cf_t["optimizer"]["learning_rate"], "Weight decay:", cf_t["optimizer"]["weight_decay"],
+        "Lr scheduler:",
+        cf_t["lr_scheduler"]["name"], "Warmup ratio:", cf_t["lr_scheduler"]["warmup_ratio"]))
 
 
 def align_labels_with_tokens(labels, word_ids):
