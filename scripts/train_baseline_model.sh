@@ -93,7 +93,7 @@ fi
 
 # Save results
 printf "\nSave results\n"
-new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H-%M)-${branch}-${stime}h
+new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H-%M)-${config}-${stime}h
 mkdir "$new_model_dir"
 cp -r ../results/* "$new_model_dir"
 cp "$config_file" "$new_model_dir"
