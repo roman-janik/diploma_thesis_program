@@ -9,8 +9,8 @@
 
 BRANCHNAME=$1
 JTIMEOUT=$3
-SHOUR=$(echo $JTIMEOUT | cut -d: -f1)
+SHOUR=$(echo "$JTIMEOUT" | cut -d: -f1)
 STIME=$((SHOUR - 1))
 CONFIG=$2
 
-qsub -v branch="$BRANCHNAME",stime="$STIME",config=$CONFIG  -l walltime=$JTIMEOUT ./train_baseline_model.sh
+qsub -v branch="$BRANCHNAME",stime="$STIME",config="$CONFIG"  -l walltime="$JTIMEOUT" ./train_baseline_model.sh
