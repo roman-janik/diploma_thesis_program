@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import logging
 import datetime
+import time
 
 from accelerate import Accelerator
 from tqdm.auto import tqdm
@@ -126,6 +127,7 @@ def prepare_datasets(config: dict):
 
 # noinspection PyArgumentList
 def main():
+    start_time = time.monotonic()
     output_dir = "../results"
     model_dir = "../results/model"
     log_dir = "../results/logs"
@@ -306,6 +308,9 @@ def main():
         log_msg("{}:\n{}\n".format(config["datasets"][dataset_name]["name"],
                                    test_result_df[
                                        ["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]]))
+
+    end_time = time.monotonic()
+    log_msg("Elapsed script time: {}".format(datetime.timedelta(seconds=end_time - start_time)))
 
 
 if __name__ == "__main__":
