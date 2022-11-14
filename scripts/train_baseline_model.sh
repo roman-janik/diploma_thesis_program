@@ -63,7 +63,7 @@ if [ ! -d "$HOMEPATH"/program/results/ ]; then # test if dir exists
 fi
 
 # Prepare local directory with results
-mkdir program/results program/results/model program/results/logs
+mkdir program/results
 
 # Prepare environment
 printf "Prepare environment\n"
@@ -91,10 +91,19 @@ else
   done)
 fi
 
+# Create all experiment results file
+all_exp_results=../results/all_experiment_results_"$(date +%Y-%m-%d-%H-%M)".txt
+touch "$all_exp_results"
+
 # Run training and save results for configs in list of configurations
 for config_file in $config_list
 do
-  printf "\nConfig: %s\n" "${config_file#*/}"
+  config_name=${config_file#*/}
+  config_name=${config_name%.*}
+  printf "\nConfig: %s\n" "$config_name"
+
+  # Prepare dirs in results dir
+  mkdir program/results/model program/results/logs
 
   # Start training
   printf "Start training\n"
@@ -112,9 +121,10 @@ do
 
   # Save results
   printf "\nSave results\n"
-  new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H-%M)-${config}-${stime}h
+  new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H-%M)-$config_name-${stime}h
   mkdir "$new_model_dir"
-  cp -r ../results/* "$new_model_dir"
+  cat ../results/experiment_results.txt >> "$all_exp_results"
+  mv ../results/* "$new_model_dir"
   cp "$config_file" "$new_model_dir"
 done
 
