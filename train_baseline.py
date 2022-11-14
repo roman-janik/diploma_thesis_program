@@ -233,7 +233,7 @@ def main():
         for i, batch in enumerate(train_dataloader):
             outputs = model(**batch)
             loss = outputs.loss
-            if i % 500 == 499:
+            if i % 100 == 99:
                 writer.add_scalar("Loss/train", loss, epoch)
             accelerator.backward(loss)
 
