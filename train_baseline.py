@@ -284,6 +284,7 @@ def main():
             tokenizer.save_pretrained(model_dir)
 
     writer.flush()
+    time.sleep(3)
 
     # Log last validation results
     log_msg("-" * 80 + "\nExperiment results:\n")
