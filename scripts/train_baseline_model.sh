@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -q gpu
-#PBS -l select=1:ncpus=12:ngpus=2:gpu_cap=cuda75:gpu_mem=10gb:mem=20gb:scratch_ssd=10gb
+#PBS -l select=1:ncpus=12:ngpus=2:gpu_cap=cuda80:gpu_mem=10gb:mem=20gb:scratch_ssd=10gb
 #PBS -j oe
 
 # Author: Roman Janík
