@@ -120,7 +120,8 @@ do
   printf "\nSave results\n"
   new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H-%M)-$config_name-${stime}h
   mkdir "$new_model_dir"
-  cat ../results/experiment_results.txt >> "$all_exp_results"
+  grep -vx '^Loading.*arrow' ../results/experiment_results.txt > ../results/experiment_results_f.txt # Remove logs from dataset load
+  cat ../results/experiment_results_f.txt >> "$all_exp_results"
   mv ../results/* "$new_model_dir"
   cp "$config_file" "$new_model_dir"
 done
