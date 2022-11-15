@@ -311,7 +311,7 @@ def main():
                                        ["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]]))
 
     end_time = time.monotonic()
-    log_msg("Elapsed script time: {}".format(datetime.timedelta(seconds=end_time - start_time)))
+    log_msg("Elapsed script time: {}\n".format(datetime.timedelta(seconds=end_time - start_time)))
 
 
 if __name__ == "__main__":
