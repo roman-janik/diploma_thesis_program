@@ -102,9 +102,6 @@ do
   config_name=${config_name%.*}
   printf "\nConfig: %s\n" "$config_name"
 
-  # Prepare dirs in results dir
-  mkdir ../program/results/model ../program/results/logs
-
   # Start training
   printf "Start training\n"
   if [ -z "$modelpath" ]; then
