@@ -92,7 +92,7 @@ else
 fi
 
 # Create all experiment results file
-all_exp_results=../results/all_experiment_results_"$(date +%Y-%m-%d-%H-%M)".txt
+all_exp_results="$RESPATH"all_experiment_results_"$(date +%Y-%m-%d-%H-%M)".txt
 touch "$all_exp_results"
 
 # Run training and save results for configs in list of configurations
@@ -103,7 +103,7 @@ do
   printf "\nConfig: %s\n" "$config_name"
 
   # Prepare dirs in results dir
-  mkdir program/results/model program/results/logs
+  mkdir ../program/results/model ../program/results/logs
 
   # Start training
   printf "Start training\n"
