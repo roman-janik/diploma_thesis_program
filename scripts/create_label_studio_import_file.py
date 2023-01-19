@@ -85,6 +85,7 @@ def get_prediction(ner_pipe: NerPipeline, task_id: int, task_file_path: str, dro
 def main():
     args = get_args()
     idx = args.index
+    doc_num_pages = 0
     result = []
     ner_pipeline = None
     skip_docs_list = []
@@ -103,10 +104,12 @@ def main():
         ner_pipeline = NerPipeline(args.tokenizer_path, args.model_path)
 
     if args.skip_docs:
-        with open(os.path.join(save_path, "skip_docs.txt"), "r") as sfp:
+        with open(os.path.join(save_path, "skip_docs.txt"), encoding="utf-8") as sfp:
             for line in sfp:
                 skip_docs_list.append(line.rstrip())
         print("Documents to be skipped:\n", skip_docs_list)
+
+    print("Starting documents processing...")
 
     for x_dir in natsorted(glob(os.path.normpath(args.source_dir) + "/*/", recursive=True)):
         document_name = os.path.basename(os.path.normpath(x_dir))
@@ -114,6 +117,8 @@ def main():
         # skip document if is it in skip document list
         if args.skip_docs and document_name in skip_docs_list:
             continue
+
+        print("Processed document:    ", document_name)
 
         for x_file in natsorted(glob(x_dir + "/*.txt")):
             file_name = os.path.basename(os.path.normpath(x_file))
@@ -142,6 +147,9 @@ def main():
             }
             result.append(task)
             idx += 1
+            doc_num_pages += 1
+        print("Document finished, number of pages:    ", doc_num_pages)
+        doc_num_pages = 0
 
     if not result:
         print("No document were processed, probably all were skipped! No result was saved.")
