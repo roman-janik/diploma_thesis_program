@@ -20,7 +20,7 @@ def get_args():
     parser.add_argument("-s", "--source_dir", required=True, help="Path to source directory with document directories.")
     parser.add_argument("-o", "--output_file", default="ls_import_file.json", help="Output file name.")
     parser.add_argument("-p", "--port", default="8081", help="Web server port for URLs.")
-    parser.add_argument("-i", "--index", default=0, help="Start index for tasks/pages.")
+    parser.add_argument("-i", "--index", default=1, help="Start index for tasks/pages.")
     parser.add_argument("-d", "--drop_num", default=0, type=int,
                         help="Drop first x predictions. For non-document header entities.")
     parser.add_argument("-r", "--drop_rate", default=0., type=float,
