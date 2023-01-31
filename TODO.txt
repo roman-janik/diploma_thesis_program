@@ -11,11 +11,11 @@ TO DO list
 ○ test it on Metacentrum - interactive job
 ○ adapt qsub script
 ○ run training on Metacentrum first in fast 24 h queue, if necessary in slow queue
-fix pipeline problem in ner_pipeline:
+○ fix pipeline problem in ner_pipeline:
 fast_tokenizer = TokenizerFast.from_file(fast_tokenizer_file)
 Exception: data did not match any variant of untagged enum ModelWrapper at line 103785 column 3
 adapt baseline training script for config file use
-run experiments on baseline: only CNEC 2.0, different learning rate, non-linear learning rate, more epochs, etc.
+○ run experiments on baseline: only CNEC 2.0, different learning rate, non-linear learning rate, more epochs, etc.
 
 - Check CHNEC dataset
 There are some errors in dataset, at least in lines 2752-2842 in validation dataset (CHNEC_v0.1_dev.conll) - person
@@ -26,11 +26,16 @@ are swapped
 - Check RobeCzech vocab.json:
 ○ The OrderedVocab you are attempting to save contains a hole for index 51959, your vocabulary could be corrupted !
 Fix: index of word 51960 changed to 51959, warning is gone
+○ Fast tokenizer fails to initialize, throws error on BPE:
+Exception: Error while initializing BPE: Token `Ġĕ` out of vocabulary
+problem is with wrong vocab.json due to differences between Hugging Face and Fairseq
+an email was sent to authors that can provide fix file
 
 - Image dataset
-use shared chronicles on the PERO-OCR web in future dataset and for creation of NE annotations by some model
+○ use shared chronicles on the PERO-OCR web in future dataset and for creation of NE annotations by some model
 download image documents: newspapers, chronicles, registry books, forms
 annotate image documents in LabelStudio
+create tool for page cropping - there are headers and footers polluting OCR output
 
 - Text dataset
 prepare loading script for SumeCzech-NER dataset
