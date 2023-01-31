@@ -15,9 +15,6 @@ import transformers
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dataset_dir", required=True,
-                        help="Path to directory with dataset files. Directory must contain subdirectories images"
-                             "and masks with respective files.")
     parser.add_argument("-e", "--num_epochs", default=100, type=int, help="Number of epochs.")
     parser.add_argument("-b", "--batch_size", default=8, type=int, help="Batch size.")
     parser.add_argument("-l", "--lr_rate", default=6.e-5, type=float, help="Learning rate.")
