@@ -5,6 +5,7 @@
 import transformers
 import argparse
 import os
+import pprint
 
 
 class NerPipeline:
@@ -43,9 +44,9 @@ def main():
 
     if args.example:
         print(f"Example text:\n{example_text}")
-        print(ner_pipeline(example_text))
+        pprint.pprint(ner_pipeline(example_text))
 
-    print(ner_pipeline(input("Type your text:\n")))
+    # print(ner_pipeline(input("Type your text:\n")))
 
     # return
 
