@@ -38,7 +38,7 @@ def main():
           "model from Hugging Face Transformers library. Resulting model will be saved in '../../results' directory.\n")
 
     # dataset
-    dataset = datasets.load_dataset("page_segmentation_dataset.py", data_dir=args.dataset_dir)
+    dataset = datasets.load_dataset("page_segmentation_dataset.py")
     dataset_train = dataset["train"]
     dataset_validation = dataset["validation"]
 
