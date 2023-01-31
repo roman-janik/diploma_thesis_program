@@ -7,7 +7,7 @@
 # 2. walltime in format HH:MM:SS
 
 BRANCHNAME=$1
-JTIMEOUT=$3
+JTIMEOUT=$2
 SHOUR=$(echo "$JTIMEOUT" | cut -d: -f1)
 STIME=$((SHOUR - 1))
 
