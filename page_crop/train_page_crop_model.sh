@@ -54,7 +54,7 @@ unzip -d datasets/page_segmentation_dataset datasets/page_segmentation_dataset.z
 # Download model
 printf "Download model\n"
 mkdir program/resources/
-cp -r "$HOMEPATH"/program/resources/maskformer-swin-large-coco program/resources/
+cp -r "$HOMEPATH"/program/resources/nvidia_mit-b0 program/resources/
 
 # Prepare directory with results
 printf "Prepare directory with results\n"
@@ -74,7 +74,7 @@ source ./env/bin/activate
 mkdir tmp
 cd program/diploma_thesis_program || exit 2
 pip install --upgrade pip
-TMPDIR=../../tmp pip install torch==1.12.1 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 -r requirements.txt
+TMPDIR=../../tmp pip install torch==1.13.1 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 -r requirements.txt
 
 
 # Start training
