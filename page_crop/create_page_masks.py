@@ -15,7 +15,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--source_dir", required=True,
                         help="Path to source directory with page xml annotations.")
-    parser.add_argument("-o", "--output_dir", help="Path to output directory.")
+    parser.add_argument("-o", "--output_dir", required=True, help="Path to output directory.")
     args = parser.parse_args()
     return args
 
