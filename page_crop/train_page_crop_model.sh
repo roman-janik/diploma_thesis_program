@@ -80,7 +80,7 @@ TMPDIR=../../tmp pip install torch==1.13.1 torchvision torchaudio --extra-index-
 # Start training
 printf "Start training\n"
 cd page_crop || exit 2
-python train_page_segmentation.py --dataset_dir "../../../datasets/page_segmentation_dataset"
+python train_page_segmentation.py
 printf "Training exit code: %s\n" "$?"
 
 
@@ -89,7 +89,6 @@ printf "\nSave results\n"
 new_model_dir=$RESPATH/"page_segmentation_model"-$(date +%Y-%m-%d-%H-%M)-${stime}h
 mkdir "$new_model_dir"
 grep -vx '^Loading.*arrow' ../results/experiment_results.txt > ../results/experiment_results_f.txt # Remove logs from dataset load
-cat ../results/experiment_results_f.txt >> "$all_exp_results"
 mv ../results/* "$new_model_dir"
 
 # clean the SCRATCH directory
