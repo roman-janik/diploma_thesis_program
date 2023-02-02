@@ -88,8 +88,8 @@ printf "Training exit code: %s\n" "$?"
 printf "\nSave results\n"
 new_model_dir=$RESPATH/"page_segmentation_model"-$(date +%Y-%m-%d-%H-%M)-${stime}h
 mkdir "$new_model_dir"
-grep -vx '^Loading.*arrow' ../results/experiment_results.txt > ../results/experiment_results_f.txt # Remove logs from dataset load
-mv ../results/* "$new_model_dir"
+#grep -vx '^Loading.*arrow' ../results/experiment_results.txt > ../results/experiment_results_f.txt # Remove logs from dataset load
+mv ../../results/* "$new_model_dir"
 
 # clean the SCRATCH directory
 clean_scratch
