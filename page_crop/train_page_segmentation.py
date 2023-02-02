@@ -16,7 +16,7 @@ import transformers
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--num_epochs", default=100, type=int, help="Number of epochs.")
-    parser.add_argument("-b", "--batch_size", default=8, type=int, help="Batch size.")
+    parser.add_argument("-b", "--batch_size", default=16, type=int, help="Batch size.")
     parser.add_argument("-l", "--lr_rate", default=6.e-5, type=float, help="Learning rate.")
     parser.add_argument("-i", "--image_width_height", default=800, type=int,
                         help="Image width and height for training.")
