@@ -94,7 +94,7 @@ def prepare_datasets(config: dict):
 
     def tokenize_and_align_labels(examples):
         tokenized_inputs = tokenizer(
-            examples["tokens"], truncation=True, is_split_into_words=True
+            examples["tokens"], truncation=True, padding=True, is_split_into_words=True
         )
         all_labels = examples["ner_tags"]
         new_labels = []
