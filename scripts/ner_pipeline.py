@@ -2,10 +2,12 @@
 # Script for using a NER model in Transformers pipeline.
 #
 
-import transformers
 import argparse
 import os
 import pprint
+
+import transformers
+import sys
 
 
 class NerPipeline:
@@ -46,9 +48,12 @@ def main():
         print(f"Example text:\n{example_text}")
         pprint.pprint(ner_pipeline(example_text))
 
-    # print(ner_pipeline(input("Type your text:\n")))
+    print("Type your text:\n")
+    text = sys.stdin.read()
+    result = ner_pipeline(text)
+    print(result["input_ids"])
 
-    # return
+    return
 
 
 if __name__ == "__main__":
