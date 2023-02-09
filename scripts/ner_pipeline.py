@@ -20,7 +20,7 @@ class NerPipeline:
         parent_path = os.path.dirname(os.path.normpath(model_path))
         self.model_version = os.path.basename(parent_path)
 
-    def __call__(self, text: str, *args, **kwargs):
+    def __call__(self, text, *args, **kwargs):
         return self.token_classifier(text)
 
 
