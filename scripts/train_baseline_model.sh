@@ -23,6 +23,8 @@ printf "START TIME:         %s\n" "$(date +%Y-%m-%d-%H-%M)"
 #printf "GIT BRANCH:         $branch\n"
 printf "\-----------------------------------------------------------\n"
 
+start_time=$(date +%s)
+
 cd "$SCRATCHDIR" || exit 2
 
 # clean the SCRATCH directory
@@ -96,6 +98,8 @@ all_exp_results="$RESPATH"all_experiment_results_"$(date +%Y-%m-%d-%H-%M)".txt
 touch "$all_exp_results"
 
 # Run training and save results for configs in list of configurations
+printf "Preparation took %s seconds, starting training...\n" $(($(date +%s) - start_time))
+config_idx=0
 for config_file in $config_list
 do
   config_name=${config_file#*/}
@@ -121,6 +125,8 @@ do
   new_model_dir=$RESPATH/$(date +%Y-%m-%d-%H-%M)-$config_name-${stime}h
   mkdir "$new_model_dir"
   grep -vx '^Loading.*arrow' ../results/experiment_results.txt > ../results/experiment_results_f.txt # Remove logs from dataset load
+  printf -- '-%.0s' {1..180} >> "$all_exp_results"; printf "\n%s. experiment\n" $config_idx >> "$all_exp_results"
+  ((config_idx++))
   cat ../results/experiment_results_f.txt >> "$all_exp_results"
   mv ../results/* "$new_model_dir"
   cp "$config_file" "$new_model_dir"
