@@ -1,0 +1,55 @@
+#!/bin/bash
+#PBS -l select=1:ncpus=32:mem=40gb:scratch_ssd=40gb
+#PBS -l walltime=4:00:00
+#PBS -j oe
+
+# Author: Roman Janík
+# Metacentrum job shell script
+# Download SumeCzech dataset
+##!!!!! IF YOU CHANGE WALLTIME DONT FORGET TO CHANGE TIMEOUT FOR TRAINING SCRIPT. !!!!!####
+##!!!!! TRAINING SCRIPT TIMEOUT SHOULD BE AT LEAST 30 min. SHORTER THAN WALLTIME. !!!!!####
+
+HOMEPATH=/storage/praha1/home/$PBS_O_LOGNAME
+DATAPATH=$HOMEPATH/datasets/            # folder with datasets
+HOSTNAME=$(hostname -f)                 # hostname of local machine
+
+printf "\-----------------------------------------------------------\n"
+printf "JOB ID:             %s\n" "$PBS_JOBID"
+printf "JOB NAME:           %s\n" "$PBS_JOBNAME"
+printf "JOB SERVER NODE:    %s\n" "$HOSTNAME"
+printf "START TIME:         %s\n" "$(date +%Y-%m-%d-%H-%M)"
+#printf "GIT BRANCH:         $branch\n"
+printf "\-----------------------------------------------------------\n"
+
+cd "$SCRATCHDIR" || exit 2
+
+# clean the SCRATCH directory
+clean_scratch
+
+# Download dataset script
+printf "Download dataset script\n"
+mkdir datasets datasets/sumeczech-1.0
+cp "$DATAPATH"/sumeczech-1.0/sumeczech-1.0.zip  datasets
+unzip -d datasets/sumeczech-1.0 datasets/sumeczech-1.0.zip
+
+# Prepare environment
+printf "Prepare environment\n"
+source /cvmfs/software.metacentrum.cz/modulefiles/5.1.0/loadmodules
+module load python
+python -m venv env
+source ./env/bin/activate
+mkdir tmp
+cd datasets/sumeczech-1.0 || exit 2
+pip install --upgrade pip
+TMPDIR=../../tmp pip install -r requirements.txt
+
+# Start downloading
+printf "Start downloading\n"
+python downloader.py --parallel 32
+
+# Save results
+printf "\nSave results\n"
+mv ./*.jsonl "$DATAPATH"/sumeczech-1.0
+
+# clean the SCRATCH directory
+clean_scratch
