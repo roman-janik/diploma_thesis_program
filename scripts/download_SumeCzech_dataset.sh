@@ -31,6 +31,7 @@ printf "Download dataset script\n"
 mkdir datasets datasets/sumeczech-1.0
 cp "$DATAPATH"/sumeczech-1.0/sumeczech-1.0.zip  datasets
 unzip -d datasets/sumeczech-1.0 datasets/sumeczech-1.0.zip
+cp "$DATAPATH"/sumeczech-1.0/downloader.py datasets/sumeczech-1.0
 
 # Prepare environment
 printf "Prepare environment\n"
