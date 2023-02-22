@@ -70,7 +70,7 @@ mv "sumeczech-1.0-dev_filtered.jsonl" "sumeczech-1.0-dev.jsonl"
 mv "sumeczech-1.0-oodtest_filtered.jsonl" "sumeczech-1.0-oodtest.jsonl"
 mv "sumeczech-1.0-test_filtered.jsonl" "sumeczech-1.0-test.jsonl"
 mv "sumeczech-1.0-train_filtered.jsonl" "sumeczech-1.0-train.jsonl"
-mv ./*.jsonl "$DATAPATH"/sumeczech-1.0
+mv "sumeczech-1.0-dev.jsonl" "sumeczech-1.0-oodtest.jsonl" "sumeczech-1.0-test.jsonl" "sumeczech-1.0-train.jsonl" "$DATAPATH"/sumeczech-1.0
 
 # clean the SCRATCH directory
 clean_scratch
