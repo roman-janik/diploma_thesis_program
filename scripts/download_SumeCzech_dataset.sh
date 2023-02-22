@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=32:mem=40gb:scratch_ssd=40gb
+#PBS -l select=1:ncpus=32:mem=20gb:scratch_ssd=20gb
 #PBS -l walltime=4:00:00
 #PBS -j oe
 
@@ -49,10 +49,18 @@ TMPDIR=../../tmp pip install -r requirements.txt
 
 # Start downloading
 printf "Start downloading\n"
-python downloader.py --parallel 2048
+python downloader.py --parallel 4096
 
 # Save results
 printf "\nSave results\n"
+
+# Merge files
+cat sumeczech-1.0-dev_*.jsonl >> "sumeczech-1.0-dev.jsonl"
+cat sumeczech-1.0-oodtest_*.jsonl >> "sumeczech-1.0-oodtest.jsonl"
+cat sumeczech-1.0-test_*.jsonl >> "sumeczech-1.0-test.jsonl"
+cat sumeczech-1.0-train_*.jsonl >> "sumeczech-1.0-train.jsonl"
+
+# Filter files
 grep -xa '^{"abstract":.*' "sumeczech-1.0-dev.jsonl" > "sumeczech-1.0-dev_filtered.jsonl"
 grep -xa '^{"abstract":.*' "sumeczech-1.0-oodtest.jsonl" > "sumeczech-1.0-oodtest_filtered.jsonl"
 grep -xa '^{"abstract":.*' "sumeczech-1.0-test.jsonl" > "sumeczech-1.0-test_filtered.jsonl"
