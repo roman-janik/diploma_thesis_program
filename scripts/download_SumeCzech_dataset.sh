@@ -33,6 +33,9 @@ cp "$DATAPATH"/sumeczech-1.0/sumeczech-1.0.zip  datasets
 unzip -d datasets/sumeczech-1.0 datasets/sumeczech-1.0.zip
 cp "$DATAPATH"/sumeczech-1.0/downloader.py "$DATAPATH"/sumeczech-1.0/downloader_extractor_utils.py datasets/sumeczech-1.0
 
+# Copy already downloaded parts
+cp "$DATAPATH"/sumeczech-1.0/*.jsonl datasets/sumeczech-1.0
+
 # Prepare environment
 printf "Prepare environment\n"
 source /cvmfs/software.metacentrum.cz/modulefiles/5.1.0/loadmodules
