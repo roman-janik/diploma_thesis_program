@@ -31,7 +31,7 @@ printf "Download dataset script\n"
 mkdir datasets datasets/sumeczech-1.0
 cp "$DATAPATH"/sumeczech-1.0/sumeczech-1.0.zip  datasets
 unzip -d datasets/sumeczech-1.0 datasets/sumeczech-1.0.zip
-cp "$DATAPATH"/sumeczech-1.0/downloader.py datasets/sumeczech-1.0
+cp "$DATAPATH"/sumeczech-1.0/downloader.py "$DATAPATH"/sumeczech-1.0/downloader_extractor_utils.py datasets/sumeczech-1.0
 
 # Prepare environment
 printf "Prepare environment\n"
@@ -46,10 +46,19 @@ TMPDIR=../../tmp pip install -r requirements.txt
 
 # Start downloading
 printf "Start downloading\n"
-python downloader.py --parallel 32
+python downloader.py --parallel 2048
 
 # Save results
 printf "\nSave results\n"
+grep -xa '^{"abstract":.*' "sumeczech-1.0-dev.jsonl" > "sumeczech-1.0-dev_filtered.jsonl"
+grep -xa '^{"abstract":.*' "sumeczech-1.0-oodtest.jsonl" > "sumeczech-1.0-oodtest_filtered.jsonl"
+grep -xa '^{"abstract":.*' "sumeczech-1.0-test.jsonl" > "sumeczech-1.0-test_filtered.jsonl"
+grep -xa '^{"abstract":.*' "sumeczech-1.0-train.jsonl" > "sumeczech-1.0-train_filtered.jsonl"
+
+mv "sumeczech-1.0-dev_filtered.jsonl" "sumeczech-1.0-dev.jsonl"
+mv "sumeczech-1.0-oodtest_filtered.jsonl" "sumeczech-1.0-oodtest.jsonl"
+mv "sumeczech-1.0-test_filtered.jsonl" "sumeczech-1.0-test.jsonl"
+mv "sumeczech-1.0-train_filtered.jsonl" "sumeczech-1.0-train.jsonl"
 mv ./*.jsonl "$DATAPATH"/sumeczech-1.0
 
 # clean the SCRATCH directory
