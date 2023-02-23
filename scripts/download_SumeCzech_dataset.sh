@@ -1,6 +1,6 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=32:mem=20gb:scratch_ssd=20gb
-#PBS -l walltime=4:00:00
+#PBS -l select=1:ncpus=16:mem=20gb:scratch_ssd=20gb
+#PBS -l walltime=12:00:00
 #PBS -j oe
 
 # Author: Roman Janík
@@ -49,7 +49,7 @@ TMPDIR=../../tmp pip install -r requirements.txt
 
 # Start downloading
 printf "Start downloading\n"
-python downloader.py --parallel 4096 --download_start "$d_start"
+python downloader.py --parallel 2048 --download_start "$d_start"
 
 # Save results
 printf "\nSave results\n"
