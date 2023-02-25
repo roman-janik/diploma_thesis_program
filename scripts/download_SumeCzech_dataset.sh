@@ -1,6 +1,6 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=16:mem=20gb:scratch_ssd=20gb
-#PBS -l walltime=0:30:00
+#PBS -l select=1:ncpus=4:mem=20gb:scratch_ssd=20gb
+#PBS -l walltime=3:00:00
 #PBS -j oe
 
 # Author: Roman Janík
@@ -49,7 +49,7 @@ TMPDIR=../../tmp pip install -r requirements.txt
 
 # Start downloading
 printf "Start downloading\n"
-python downloader.py --parallel 2048 --download_start "$d_start" --download_end "$d_end"
+python downloader.py --parallel 64 --download_start "$d_start" --download_end "$d_end"
 
 # Save results
 printf "\nSave results\n"
@@ -68,7 +68,7 @@ mv "sumeczech-1.0-train_filtered.jsonl" "sumeczech-1.0-train.jsonl"
 cat "sumeczech-1.0-dev.jsonl" >> "$DATAPATH"/sumeczech-1.0/"sumeczech-1.0-dev.jsonl"
 cat "sumeczech-1.0-oodtest.jsonl" >> "$DATAPATH"/sumeczech-1.0/"sumeczech-1.0-oodtest.jsonl"
 cat "sumeczech-1.0-test.jsonl" >> "$DATAPATH"/sumeczech-1.0/"sumeczech-1.0-test.jsonl"
-cat "sumeczech-1.0-train.jsonl" >> "$DATAPATH"/sumeczech-1.0/"sumeczech-1.0-train_xxx.jsonl"
+cat "sumeczech-1.0-train.jsonl" >> "$DATAPATH"/sumeczech-1.0/"sumeczech-1.0-train.jsonl"
 
 # clean the SCRATCH directory
 clean_scratch
