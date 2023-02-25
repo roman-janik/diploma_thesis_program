@@ -49,7 +49,7 @@ TMPDIR=../../tmp pip install -r requirements.txt
 
 # Start downloading
 printf "Start downloading\n"
-python downloader.py --parallel 64 --download_start "$d_start" --download_end "$d_end"
+python downloader.py --parallel 64 # --download_start "$d_start" --download_end "$d_end"
 
 # Save results
 printf "\nSave results\n"
