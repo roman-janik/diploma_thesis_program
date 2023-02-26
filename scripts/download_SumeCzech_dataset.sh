@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -l select=1:ncpus=4:mem=20gb:scratch_ssd=20gb
-#PBS -l walltime=3:00:00
+#PBS -l walltime=10:00:00
 #PBS -j oe
 
 # Author: Roman Janík
