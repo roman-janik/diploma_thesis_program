@@ -7,3 +7,4 @@ accelerate~=0.13.1
 tokenizers~=0.12.1
 tensorboard~=2.10.1
 torchvision~=0.14.1
+nltk~=3.8.1
