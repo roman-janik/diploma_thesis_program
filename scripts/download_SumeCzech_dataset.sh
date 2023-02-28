@@ -1,6 +1,6 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=4:mem=30gb:scratch_ssd=30gb
-#PBS -l walltime=10:00:00
+#PBS -l select=1:ncpus=1:mem=10gb:scratch_ssd=10gb
+#PBS -l walltime=2:00:00
 #PBS -j oe
 
 # Author: Roman Janík
@@ -49,7 +49,7 @@ TMPDIR=../../tmp pip install -r requirements.txt
 
 # Start downloading
 printf "Start downloading\n"
-python downloader.py --parallel 1024 --download_start "$d_start" --download_end "$d_end"
+python downloader.py --parallel 16 --download_start "$d_start" --download_end "$d_end"
 
 # Save results
 printf "\nSave results\n"
@@ -64,6 +64,9 @@ mv "sumeczech-1.0-dev_filtered.jsonl" "sumeczech-1.0-dev.jsonl"
 mv "sumeczech-1.0-oodtest_filtered.jsonl" "sumeczech-1.0-oodtest.jsonl"
 mv "sumeczech-1.0-test_filtered.jsonl" "sumeczech-1.0-test.jsonl"
 mv "sumeczech-1.0-train_filtered.jsonl" "sumeczech-1.0-train.jsonl"
+
+printf "Total entries downloaded:"
+wc -l "sumeczech-1.0-dev.jsonl" "sumeczech-1.0-oodtest.jsonl" "sumeczech-1.0-test.jsonl" "sumeczech-1.0-train.jsonl"
 
 cat "sumeczech-1.0-dev.jsonl" >> "$DATAPATH"/sumeczech-1.0/"sumeczech-1.0-dev.jsonl"
 cat "sumeczech-1.0-oodtest.jsonl" >> "$DATAPATH"/sumeczech-1.0/"sumeczech-1.0-oodtest.jsonl"
