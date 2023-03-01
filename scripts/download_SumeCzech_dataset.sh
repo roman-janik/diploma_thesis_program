@@ -35,6 +35,7 @@ cp "$DATAPATH"/sumeczech-1.0/downloader.py "$DATAPATH"/sumeczech-1.0/downloader_
 
 # Copy already downloaded parts
 cp "$DATAPATH"/sumeczech-1.0/*.jsonl datasets/sumeczech-1.0
+train_lines_before=$(wc -l < "sumeczech-1.0-train.jsonl")
 
 # Prepare environment
 printf "Prepare environment\n"
@@ -67,8 +68,8 @@ mv "sumeczech-1.0-oodtest_filtered.jsonl" "sumeczech-1.0-oodtest.jsonl"
 mv "sumeczech-1.0-test_filtered.jsonl" "sumeczech-1.0-test.jsonl"
 mv "sumeczech-1.0-train_filtered.jsonl" "sumeczech-1.0-train.jsonl"
 
-printf "Total entries downloaded:"
-wc -l "sumeczech-1.0-dev.jsonl" "sumeczech-1.0-oodtest.jsonl" "sumeczech-1.0-test.jsonl" "sumeczech-1.0-train.jsonl"
+train_lines_after=$(wc -l < "sumeczech-1.0-train.jsonl")
+printf "Total entries downloaded for train set:\n%d\n" $((train_lines_after - train_lines_before))
 
 cat "sumeczech-1.0-dev.jsonl" >> "$DATAPATH"/sumeczech-1.0/"sumeczech-1.0-dev.jsonl"
 cat "sumeczech-1.0-oodtest.jsonl" >> "$DATAPATH"/sumeczech-1.0/"sumeczech-1.0-oodtest.jsonl"
