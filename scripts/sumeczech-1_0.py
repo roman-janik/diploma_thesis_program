@@ -118,7 +118,7 @@ class SumeCzechNER(datasets.GeneratorBasedBuilder):
         data_file_template = "sumeczech-1.0-ner-{}.jsonl"
         sumeczech_dir = "../sumeczech-1.0"
         sumeczech_split_file = "sumeczech-1.0-{}.jsonl"
-        sumeczech_entries = []
+        sumeczech_entries = {}
         guid = 0
 
         # load SumeCzech split file
@@ -126,7 +126,8 @@ class SumeCzechNER(datasets.GeneratorBasedBuilder):
                 as sumeczech_f:
             for line in sumeczech_f:
                 entry = json.loads(line)
-                sumeczech_entries.append(entry)
+                text = entry["headline"] + "\n" + entry["abstract"] + "\n" + entry["text"]
+                sumeczech_entries[entry["md5"]] = text
 
         for dataset_file in glob(dataset_path + "/*.jsonl"):
             if os.path.basename(dataset_file) in [data_file_template.format(str(num)) for num in skip]:
@@ -139,14 +140,13 @@ class SumeCzechNER(datasets.GeneratorBasedBuilder):
                         continue
                     ner_tags = entry["ne_headline"] + entry["ne_abstract"] + entry["ne_text"]
 
-                    sumeczech_entry = next((x for x in sumeczech_entries if entry["md5"] == x["md5"]), None)
-                    if not sumeczech_entry:
+                    try:
+                        sumeczech_text = sumeczech_entries[entry["md5"]]
+                    except KeyError:
                         print("Example with md5 '{}' not found in SumeCzech dataset split: {}".format(
-                              entry["md5"], split))
+                            entry["md5"], split))
                         continue
-                    text = sumeczech_entry["headline"] + "\n" + sumeczech_entry["abstract"] + "\n" \
-                        + sumeczech_entry["text"]
-                    tokens = self.tokenize(text)
+                    tokens = self.tokenize(sumeczech_text)
 
                     yield guid, {
                         "id": str(guid),
