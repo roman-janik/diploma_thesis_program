@@ -5,7 +5,7 @@
 #  Paths are relative to training script working directory.
 #  Datasets are preprocessed to Hugging Face arrow format
 
-desc: "Baseline experiment. Learning rate scheduler is linear, training 5 epochs on combined CNEC and CHNEC."
+desc: "Baseline experiment. Learning rate scheduler is linear, training 5 epochs on combined CNEC, CHNEC and SumeCzech-NER."
 
 model:
   name: "RobeCzech base PyTorch"
