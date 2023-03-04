@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -q gpu
-#PBS -l select=1:ncpus=12:ngpus=2:gpu_cap=cuda80:gpu_mem=10gb:mem=20gb:scratch_ssd=10gb:cluster=galdor
+#PBS -l select=1:ncpus=8:ngpus=2:gpu_cap=cuda80:gpu_mem=20gb:mem=20gb:scratch_ssd=20gb:cluster=galdor
 #PBS -j oe
 
 # Author: Roman Janík
@@ -48,10 +48,11 @@ cd ../..
 
 # Download dataset
 printf "Download dataset\n"
-mkdir datasets datasets/cnec2.0_extended datasets/chnec1.0
-cp "$DATAPATH"/cnec2.0_extended/cnec2.0_extended.zip "$DATAPATH"/chnec1.0/chnec1.0.zip datasets
+mkdir datasets datasets/cnec2.0_extended datasets/chnec1.0 datasets/sumeczech-1.0-ner
+cp "$DATAPATH"/cnec2.0_extended/cnec2.0_extended.zip "$DATAPATH"/chnec1.0/chnec1.0.zip "$DATAPATH"/sumeczech-1.0-ner/sumeczech-1.0-ner.zip datasets
 unzip -d datasets/cnec2.0_extended datasets/cnec2.0_extended.zip
 unzip -d datasets/chnec1.0 datasets/chnec1.0.zip
+unzip -d datasets/sumeczech-1.0-ner datasets/sumeczech-1.0-ner.zip
 
 # Download model
 printf "Download model\n"
