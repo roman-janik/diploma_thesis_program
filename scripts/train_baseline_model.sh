@@ -58,6 +58,7 @@ unzip -d datasets/sumeczech-1.0-ner datasets/sumeczech-1.0-ner.zip
 printf "Download model\n"
 mkdir program/resources/
 cp -r "$HOMEPATH"/program/resources/robeczech-base-pytorch program/resources/
+cp -r "$HOMEPATH"/program/resources/Czert-B-base-cased program/resources/
 
 # Prepare directory with results
 printf "Prepare directory with results\n"
