@@ -1,0 +1,38 @@
+# Author: Roman Janík
+# Experiment YAML configuration file
+#
+# Notes:
+#  Paths are relative to training script working directory.
+#  Datasets are preprocessed to Hugging Face arrow format
+
+desc: "Czert B model. Learning rate scheduler is linear, training 10 epochs on combined CNEC and CHNEC,
+       with weight decay set to 0.01."
+
+model:
+  name: "CZERT B base PyTorch"
+  desc: "Czech version of BERT transformer model. Hugging Face PyTorch type."
+  path: "../resources/Czert-B-base-cased"
+
+datasets:
+  cnec:
+    name: "CNEC 2.0 CoNLL"
+    desc: "Czech Named Entity Corpus 2.0 CoNNL dataset. General-language Czech NER dataset."
+    path: "../../datasets/cnec2.0_extended"
+  chnec:
+    name: "CHNEC 1.0"
+    desc: "Czech Historical Named Entity Corpus 1.0 dataset. Historic-language Czech NER dataset."
+    path: "../../datasets/chnec1.0"
+
+training:
+  num_train_epochs: 10
+  batch_size: 16
+  val_batch_size: 16
+
+  optimizer:
+    learning_rate: 2.e-5
+    weight_decay: 0.01
+    beta1: 0.9
+    beta2: 0.999
+  lr_scheduler:
+    name: "linear"
+    warmup_ratio: 0.
