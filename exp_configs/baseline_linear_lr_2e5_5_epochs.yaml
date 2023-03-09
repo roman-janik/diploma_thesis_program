@@ -24,8 +24,8 @@ datasets:
 
 training:
   num_train_epochs: 5
-  batch_size: 32
-  val_batch_size: 32
+  batch_size: 16
+  val_batch_size: 16
 
   optimizer:
     learning_rate: 2.e-5
