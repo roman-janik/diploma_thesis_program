@@ -59,6 +59,7 @@ printf "Download model\n"
 mkdir program/resources/
 cp -r "$HOMEPATH"/program/resources/robeczech-base-pytorch program/resources/
 cp -r "$HOMEPATH"/program/resources/Czert-B-base-cased program/resources/
+cp -r "$HOMEPATH"/program/resources/Slavic-BERT-cased program/resources/
 
 # Prepare directory with results
 printf "Prepare directory with results\n"
