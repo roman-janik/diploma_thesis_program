@@ -10,9 +10,10 @@ import datasets
 
 from glob import glob
 from typing import List
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, sent_tokenize
 
 logger = datasets.logging.get_logger(__name__)
+
 
 _CITATION = """\
 @article{SumeCzech-NER,
@@ -138,7 +139,7 @@ class SumeCzechNER(datasets.GeneratorBasedBuilder):
                     entry = json.loads(line)
                     if entry["dataset"] != split:
                         continue
-                    ner_tags = entry["ne_headline"] + entry["ne_abstract"] + entry["ne_text"]
+                    ner_tags_list = entry["ne_headline"] + entry["ne_abstract"] + entry["ne_text"]
 
                     try:
                         sumeczech_text = sumeczech_entries[entry["md5"]]
@@ -146,17 +147,28 @@ class SumeCzechNER(datasets.GeneratorBasedBuilder):
                         print("Example with md5 '{}' not found in SumeCzech dataset split: {}".format(
                             entry["md5"], split))
                         continue
-                    tokens = self.tokenize(sumeczech_text)
+                    examples = self.tokenize(ner_tags_list, sumeczech_text)
 
-                    yield guid, {
-                        "id": str(guid),
-                        "tokens": tokens,
-                        "ner_tags": ner_tags
-                    }
-                    guid += 1
+                    for ner_tags, tokens in examples:
+                        yield guid, {
+                            "id": str(guid),
+                            "tokens": tokens,
+                            "ner_tags": ner_tags_list
+                        }
+                        guid += 1
 
-    def tokenize(self, text: str) -> List[str]:
+    def tokenize(self, ner_tags_list_orig: List[str], text: str):
         for mark in ('.', ',', '?', '!', '-', '–', '/'):
             text = text.replace(mark, f' {mark} ')
-        tokens = word_tokenize(text)
-        return tokens
+        sentences = sent_tokenize(text)
+        tokens_list = [word_tokenize(t) for t in sentences]
+
+        s_i, e_i = 0, 0
+        ner_tags_list_new = []
+        for i, tokens in enumerate(tokens_list):
+            e_i += len(tokens)
+            ner_tags = ner_tags_list_orig[s_i:e_i]
+            ner_tags_list_new.append(ner_tags)
+            s_i = e_i
+
+        return list(zip(ner_tags_list_new, tokens_list))
