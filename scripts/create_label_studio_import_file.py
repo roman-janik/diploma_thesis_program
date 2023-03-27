@@ -76,7 +76,10 @@ def get_prediction(ner_pipe: NerPipeline, task_id: int, task_file_path: str, dro
             task_text_chunk = task_text[start_chunk_pos:end_chunk_pos]
             task_text_chunks.append(task_text_chunk)
 
-            tokens_len = 0 if tokens_len <= m_max_length else tokens_len - m_max_length + token_offset
+            if tokens_len <= m_max_length:
+                break
+            else:
+                tokens_len -= m_max_length + token_offset
             start_chunk_pos = tok_task_text.token_to_chars(end_chunk_token_pos - token_offset).end
             chunk_pos_offsets.append(start_chunk_pos)
             end_chunk_token_pos = max_token_len - 2 \
