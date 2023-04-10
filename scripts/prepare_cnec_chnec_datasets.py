@@ -27,8 +27,6 @@ sumeczech_dir = "sumeczech-1.0-ner"
 
 # load CNEC 2.0 CoNLL dataset with loading script
 cnec_dataset = datasets.load_dataset("cnec2_0_conll.py")
-print(cnec_dataset["train"][71]["tokens"])
-print(cnec_dataset["train"][71]["ner_tags"])
 
 # transform CNEC 2.0 CoNLL dataset into CHNEC 1.0 format -> change in NER tags
 cnec_dataset = cnec_dataset.cast_column("ner_tags", datasets.Sequence(
