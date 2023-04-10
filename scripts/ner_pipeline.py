@@ -51,7 +51,7 @@ def main():
     print("Type your text:\n")
     text = sys.stdin.read()
     result = ner_pipeline(text)
-    print(result["input_ids"])
+    pprint.pprint(result)
 
     return
 
