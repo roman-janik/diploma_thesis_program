@@ -38,7 +38,7 @@ def log_msg(msg: str):
 
 def log_summary(exp_name: str, config: dict):
     log_msg("{:<24}{}\n{:<24}{}".format(
-        "Name:", exp_name.removeprefix("exp_configs/").removesuffix(".yaml"), "Description:", config["desc"]))
+        "Name:", exp_name.removeprefix("exp_configs_ner/").removesuffix(".yaml"), "Description:", config["desc"]))
     ct = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_msg("{:<24}{}\n{:<24}{}\n{:<24}{}\n".format(
         "Start time:", ct, "Model:", config["model"]["name"],
