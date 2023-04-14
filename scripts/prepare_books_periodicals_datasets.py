@@ -40,10 +40,10 @@ https://pero-ocr.fit.vutbr.cz
 
 # load from a directory
 books_dataset = load_dataset("text", data_dir=os.path.join(datasets_path, pero_ocr_corpus_dir, books_text),
-                             name="pero_ocr_books", version=BOOKS_VERSION,
+                             sample_by="document", name="pero_ocr_books", version=BOOKS_VERSION,
                              description=BOOKS_DESCRIPTION)
 periodicals_dataset = load_dataset("text", data_dir=os.path.join(datasets_path, pero_ocr_corpus_dir, periodicals_text),
-                                   name="pero_ocr_periodicals", version=PERIODICALS_VERSION,
+                                   sample_by="document", name="pero_ocr_periodicals", version=PERIODICALS_VERSION,
                                    description=PERIODICALS_DESCRIPTION)
 
 # save datasets
