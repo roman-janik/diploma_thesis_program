@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Author: Roman Janík
-# Metacentrum start job shell script
+# Metacentrum start Named Entity Recognition job shell script
 # Arguments:
 # 1. git branch name
 # 2. config name (no .yaml extension)
