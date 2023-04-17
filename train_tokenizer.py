@@ -19,8 +19,6 @@ from tokenizers import (
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--tokenizer_dir", required=True,
-                        help="Path to directory with tokenizer and model config.")
     parser.add_argument("-n", "--new_tokenizer_dir", required=True,
                         help="Path to directory to save new tokenizer.")
     parser.add_argument("-d", "--dataset_dirs", required=True, help="List of paths to directories containing datasets.")
@@ -68,6 +66,7 @@ def main():
     print(enc.tokens)
 
     wrapped_tokenizer = RobertaTokenizerFast(tokenizer_object=tokenizer,
+                                             model_max_length=512,
                                              bos_token="[CLS]",
                                              eos_token="[SEP]",
                                              sep_token="[SEP]",
