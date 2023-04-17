@@ -83,7 +83,7 @@ TMPDIR=../../tmp pip install torch==1.13.1 torchvision torchaudio --extra-index-
 
 # Prepare list of configurations
 if [ "$config" == "all" ]; then
-  config_list="exp_configs/*"
+  config_list="exp_configs_ner/*"
 else
   if [ "${config:0:1}" == '[' ]; then # list of configs
     config=${config#*[}
@@ -92,7 +92,7 @@ else
 
   config_list=$(for cfg in $config
   do
-    echo "exp_configs/$cfg.yaml"
+    echo "exp_configs_ner/$cfg.yaml"
   done)
 fi
 
