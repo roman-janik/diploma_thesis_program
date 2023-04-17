@@ -80,7 +80,7 @@ def main():
     # Set timeout limit
     ten_min = 600.
     sec_in_hour = 3600.
-    time_limit = 10.  # 10 min before timeout
+    time_limit = 300.  # 10 min before timeout
     # time_limit = (args.timeout / sec_in_hour) - ten_min  # 10 min before timeout
 
     # Load config file
