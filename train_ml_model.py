@@ -203,13 +203,13 @@ def main():
                         "steps": completed_steps,
                         "Loss/train": loss.item() * gradient_accumulation_steps,
                     })
-                    # check for time limit
-                    curr_time = time.monotonic()
-                    if curr_time - start_time > time_limit:
-                        save_model_and_state()
-                        if accelerator.is_main_process:
-                            log_msg("\nTraining timed out!")
-                        return
+                # check for time limit
+                curr_time = time.monotonic()
+                if curr_time - start_time > time_limit:
+                    save_model_and_state()
+                    if accelerator.is_main_process:
+                        log_msg("\nTraining timed out!")
+                    return
 
                 loss = loss / gradient_accumulation_steps
                 accelerator.backward(loss)
@@ -232,7 +232,7 @@ def main():
                             outputs = model(**eval_batch)
                         eval_losses.append(accelerator.gather(outputs.loss))
 
-                    eval_loss = torch.mean(torch.Tensor(eval_losses))  # torch.cat(eval_losses))
+                    eval_loss = torch.mean(torch.cat(eval_losses))  # torch.Tensor(eval_losses))
                     try:
                         perplexity = torch.exp(eval_loss)
                     except OverflowError:
