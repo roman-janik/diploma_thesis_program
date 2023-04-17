@@ -58,6 +58,10 @@ printf "Download model\n"
 mkdir program/resources/
 cp -r "$HOMEPATH"/program/resources/robeczech-base-pytorch program/resources/
 
+# Download tokenizers
+printf "Download tokenizers\n"
+cp -r "$HOMEPATH"/program/resources/tokenizers program/resources/
+
 # Prepare directory with results
 printf "Prepare directory with results\n"
 if [ ! -d "$HOMEPATH"/program/results/ ]; then # test if dir exists
