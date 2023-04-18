@@ -178,7 +178,7 @@ def main():
         progress_bar = tqdm(range(num_training_steps))
         completed_steps = 0
         gradient_accumulation_steps = 2  # 8_192 / batch_size
-        eval_steps = 1  # 2_000
+        eval_steps = 4  # 2_000
         eval_loss, perplexity = torch.Tensor(1), torch.Tensor(1)
 
         # Training loop
@@ -230,14 +230,9 @@ def main():
                     for eval_batch in eval_dataloader:
                         with torch.no_grad():
                             outputs = model(**eval_batch)
-                        eval_losses.append(accelerator.gather(outputs.loss))
+                        eval_losses.append(accelerator.gather(outputs.loss).reshape(1))
 
-                    accelerator.print("\nacc print eval_losses:", eval_losses)
-                    print("\nprint eval_losses:", eval_losses)
-                    print("\nprint eval_losses len and shape:", len(eval_losses), eval_losses.shape)
-
-                    concat_eval_losses = eval_losses[0] if len(eval_losses) == 1 else torch.cat(eval_losses)
-                    eval_loss = torch.mean(concat_eval_losses)
+                    eval_loss = torch.mean(torch.cat(eval_losses))
 
                     try:
                         perplexity = torch.exp(eval_loss)
