@@ -232,7 +232,9 @@ def main():
                             outputs = model(**eval_batch)
                         eval_losses.append(accelerator.gather(outputs.loss))
 
-                    eval_loss = torch.mean(torch.cat(eval_losses))  # torch.Tensor(eval_losses))
+                    concat_eval_losses = torch.Tensor(eval_losses) if len(eval_losses) == 1 else torch.cat(eval_losses)
+                    eval_loss = torch.mean(concat_eval_losses)
+
                     try:
                         perplexity = torch.exp(eval_loss)
                     except OverflowError:
