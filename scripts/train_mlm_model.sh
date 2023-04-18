@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -q gpu
-#PBS -l select=1:ncpus=4:ngpus=2:gpu_cap=cuda80:gpu_mem=20gb:mem=20gb:scratch_ssd=20gb
+#PBS -l select=1:ncpus=2:ngpus=2:gpu_cap=cuda80:gpu_mem=20gb:mem=20gb:scratch_ssd=20gb
 #PBS -j oe
 
 # Author: Roman Janík
@@ -114,7 +114,10 @@ do
   # Start training
   printf "Start training\n"
   if [ "$from_state" == false ]; then
+      ls -l
+      ls -l ../results
       mkdir ../results/train_state
+      ls -l ../results/train_state
       python train_ml_model.py --config "$config_file" --timeout "$stime"
       printf "Training exit code: %s\n" "$?"
   else
