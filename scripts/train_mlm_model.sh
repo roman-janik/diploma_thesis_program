@@ -114,10 +114,7 @@ do
   # Start training
   printf "Start training\n"
   if [ "$from_state" == false ]; then
-      ls -l
-      ls -l ../results
       mkdir ../results/train_state
-      ls -l ../results/train_state
       python train_ml_model.py --config "$config_file" --timeout "$stime"
       printf "Training exit code: %s\n" "$?"
   else
