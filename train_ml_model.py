@@ -173,7 +173,7 @@ def main():
                 tokenizer.save_pretrained(model_dir)
                 save_epoch_step(os.path.join(train_state_dir, epoch_step_file), epoch, step)
             accelerator.save_state(train_state_dir)
-            accelerator.print("Model and train state was successfully saved.")
+            accelerator.print("Model and train state were successfully saved.")
 
         progress_bar = tqdm(range(num_training_steps))
         completed_steps = 0
