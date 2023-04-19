@@ -162,8 +162,10 @@ def main():
             accelerator.load_state(train_state_dir)
             last_state_epoch, last_state_step = load_epoch_step(os.path.join(train_state_dir, epoch_step_file))
             train_dataloader_last = accelerator.skip_first_batches(train_dataloader, last_state_step)
-            start_epoch, start_step = last_state_epoch, last_state_step
+            start_epoch, start_step = last_state_epoch, last_state_step + 1
             from_l_state = True
+            log_msg(f"---------- Start training from last state. ----------")
+            log_msg(f"Start epoch:   {start_epoch}, start step:   {start_step}\n")
 
         def save_model_and_state():
             accelerator.wait_for_everyone()
@@ -173,9 +175,9 @@ def main():
                 tokenizer.save_pretrained(model_dir)
                 save_epoch_step(os.path.join(train_state_dir, epoch_step_file), epoch, step)
             accelerator.save_state(train_state_dir)
-            accelerator.print("Model and train state were successfully saved.")
+            accelerator.print(f"Model and train state were successfully saved, last step:   {step}")
 
-        progress_bar = tqdm(range(num_training_steps))
+        progress_bar = tqdm(range(num_training_steps + 1), initial=start_step)
         completed_steps = 0
         gradient_accumulation_steps = 2  # 8_192 / batch_size
         eval_steps = 4  # 2_000
@@ -193,8 +195,9 @@ def main():
             # Training
             model.train()
             for step, batch in enumerate(curr_train_dataloader, start=start_step):
+                # forward an backward pass
                 outputs = model(**batch)
-                print(batch["input_ids"])
+                # print(batch["input_ids"])
                 loss = outputs.loss
                 if (completed_steps + 1) % 100 == 0:
                     writer.add_scalar("Loss/train", loss.item() * gradient_accumulation_steps, epoch)
@@ -203,14 +206,6 @@ def main():
                         "steps": completed_steps,
                         "Loss/train": loss.item() * gradient_accumulation_steps,
                     })
-                # check for time limit
-                curr_time = time.monotonic()
-                if curr_time - start_time > time_limit:
-                    save_model_and_state()
-                    if accelerator.is_main_process:
-                        log_msg("\nTraining timed out!")
-                    return
-
                 loss = loss / gradient_accumulation_steps
                 accelerator.backward(loss)
 
@@ -220,8 +215,16 @@ def main():
                     optimizer.step()
                     lr_scheduler.step()
                     optimizer.zero_grad()
-                    progress_bar.update(1)
                     completed_steps += 1
+                progress_bar.update(1)
+
+                # check for time limit
+                curr_time = time.monotonic()
+                if curr_time - start_time > time_limit:
+                    save_model_and_state()
+                    if accelerator.is_main_process:
+                        log_msg("\nTraining timed out!")
+                    return
 
                 # Evaluation
                 if (step % (eval_steps * gradient_accumulation_steps)) == 0:
