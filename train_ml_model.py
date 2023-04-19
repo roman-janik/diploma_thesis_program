@@ -80,7 +80,7 @@ def main():
     # Set timeout limit
     ten_min = 600.
     sec_in_hour = 3600.
-    time_limit = 300.  # 10 min before timeout
+    time_limit = 1800.  # 10 min before timeout
     # time_limit = (args.timeout / sec_in_hour) - ten_min  # 10 min before timeout
 
     # Load config file
@@ -123,7 +123,7 @@ def main():
             pero_ocr_dataset["test"],
             collate_fn=data_collator,
             batch_size=batch_size,
-            # batch_size=config["training"]["val_batch_size"],
+            # batch_size=config["training"]["batch_size"],
         )
 
         roberta_config = transformers.RobertaConfig.from_pretrained(config["models"]["trained_model"]["config"])
@@ -179,9 +179,10 @@ def main():
 
         progress_bar = tqdm(range(num_training_steps + 1), initial=start_step)
         completed_steps = 0
-        gradient_accumulation_steps = 2  # 8_192 / batch_size
-        eval_steps = 4  # 2_000
+        gradient_accumulation_steps = 8_192 / batch_size
+        eval_steps = 200  # 2_000
         eval_loss, perplexity = torch.Tensor(1), torch.Tensor(1)
+        log_msg(f"Current gradient accumulation steps: {gradient_accumulation_steps}")
 
         # Training loop
         for epoch in range(start_epoch, num_train_epochs):
@@ -197,7 +198,7 @@ def main():
             for step, batch in enumerate(curr_train_dataloader, start=start_step):
                 # forward an backward pass
                 outputs = model(**batch)
-                # print(batch["input_ids"])
+                print("Tensor device:   {}".format(batch["input_ids"].device))
                 loss = outputs.loss
                 if (completed_steps + 1) % 100 == 0:
                     writer.add_scalar("Loss/train", loss.item() * gradient_accumulation_steps, epoch)
