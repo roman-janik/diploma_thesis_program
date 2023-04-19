@@ -139,10 +139,6 @@ def main():
                                       betas=(cf_optimizer["beta1"], cf_optimizer["beta2"]),
                                       weight_decay=cf_optimizer["weight_decay"])
 
-        model, optimizer, train_dataloader, eval_dataloader = accelerator.prepare(
-            model, optimizer, train_dataloader, eval_dataloader
-        )
-
         num_train_epochs = config["training"]["num_train_epochs"]
         num_update_steps_per_epoch = len(train_dataloader)
         num_training_steps = num_train_epochs * num_update_steps_per_epoch
@@ -154,6 +150,10 @@ def main():
             optimizer=optimizer,
             num_warmup_steps=int(config["training"]["lr_scheduler"]["warmup_ratio"] * num_training_steps),
             num_training_steps=num_training_steps,
+        )
+
+        model, optimizer, train_dataloader, eval_dataloader, lr_scheduler = accelerator.prepare(
+            model, optimizer, train_dataloader, eval_dataloader, lr_scheduler
         )
         accelerator.register_for_checkpointing(lr_scheduler)
 

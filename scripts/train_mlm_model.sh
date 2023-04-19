@@ -115,12 +115,12 @@ do
   printf "Start training\n"
   if [ "$from_state" == false ]; then
       mkdir ../results/train_state
-      python train_ml_model.py --config "$config_file" --timeout "$stime"
+      accelerate launch --multi_gpu train_ml_model.py --config "$config_file" --timeout "$stime"
       printf "Training exit code: %s\n" "$?"
   else
       last_result_dir=$(ls "$RESPATH" | grep "$config_name" | tail -n 1)
       cp -r "$RESPATH"/"$last_result_dir"/train_state ../results
-      python train_ml_model.py --config "$config_file" --timeout "$stime" --from_state
+      accelerate launch --multi_gpu train_ml_model.py --config "$config_file" --timeout "$stime" --from_state
       printf "Training exit code: %s\n" "$?"
   fi
 
