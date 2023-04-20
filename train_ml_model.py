@@ -112,6 +112,8 @@ def main():
         log_msg(f"Current batch size: {batch_size}")
         nonlocal accelerator  # Ensure they can be used in our context
         accelerator.free_memory()  # Free all lingering references
+        accelerator.print(f"Number of accelerator processes / device workers:   {accelerator.num_processes}")
+
         train_dataloader = torch.utils.data.DataLoader(
             pero_ocr_dataset["train"],
             collate_fn=data_collator,
@@ -179,7 +181,7 @@ def main():
 
         progress_bar = tqdm(range(num_training_steps + 1), initial=start_step)
         completed_steps = 0
-        gradient_accumulation_steps = 8_192 / batch_size
+        gradient_accumulation_steps = 8_192 // batch_size  # * accelerator.num_processes)
         eval_steps = 200  # 2_000
         eval_loss, perplexity = torch.Tensor(1), torch.Tensor(1)
         log_msg(f"Current gradient accumulation steps: {gradient_accumulation_steps}")
@@ -198,7 +200,7 @@ def main():
             for step, batch in enumerate(curr_train_dataloader, start=start_step):
                 # forward an backward pass
                 outputs = model(**batch)
-                print("Tensor device:   {}".format(batch["input_ids"].device))
+                # print("Tensor device:   {}".format(batch["input_ids"].device))
                 loss = outputs.loss
                 if (completed_steps + 1) % 100 == 0:
                     writer.add_scalar("Loss/train", loss.item() * gradient_accumulation_steps, epoch)
