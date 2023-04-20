@@ -80,8 +80,8 @@ def main():
     # Set timeout limit
     ten_min = 600.
     sec_in_hour = 3600.
-    # time_limit = 1800.  # 10 min before timeout
-    time_limit = (args.timeout / sec_in_hour) - ten_min  # 10 min before timeout
+    time_limit = 1800.  # 10 min before timeout
+    # time_limit = (args.timeout / sec_in_hour) - ten_min  # 10 min before timeout
 
     # Load config file
     with open(args.config, 'r') as config_file:
@@ -202,7 +202,7 @@ def main():
                 outputs = model(**batch)
                 # print("Tensor device:   {}".format(batch["input_ids"].device))
                 loss = outputs.loss
-                if (step + 1) % 400 == 0:
+                if (completed_steps + 1) % 10 == 0:
                     writer.add_scalar("Loss/train", loss.item() * gradient_accumulation_steps, epoch)
                     accelerator.print({
                         "lr": lr_scheduler.get_last_lr()[0],
