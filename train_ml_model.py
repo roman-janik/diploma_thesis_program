@@ -214,7 +214,7 @@ def main():
 
                 if step % gradient_accumulation_steps == 0:
                     writer.add_scalar("Learning_rate/train", lr_scheduler.get_last_lr()[0], step)
-                    accelerator.clip_grad_norm_(model.parameters(), 2.0)
+                    accelerator.clip_grad_norm_(model.parameters(), 8.0)
                     optimizer.step()
                     lr_scheduler.step()
                     optimizer.zero_grad()
