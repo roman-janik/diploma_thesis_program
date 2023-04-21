@@ -181,7 +181,7 @@ def main():
 
         progress_bar = tqdm(range(num_training_steps + 1), initial=start_step)
         completed_steps = 0
-        gradient_accumulation_steps = 2_048 // batch_size  # * accelerator.num_processes)
+        gradient_accumulation_steps = 4_196 // batch_size  # * accelerator.num_processes)
         eval_steps = 200  # 2_000
         eval_loss, perplexity = torch.Tensor(1), torch.Tensor(1)
         log_msg(f"Current gradient accumulation steps: {gradient_accumulation_steps}")
