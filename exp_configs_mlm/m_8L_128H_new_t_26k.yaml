@@ -5,7 +5,7 @@
 #  Paths are relative to training script working directory.
 #  Datasets are preprocessed to Hugging Face arrow format
 
-desc: "Tiny model, 8L 128H. New tokenizer 26k vocab. Basic setting, 20 epochs on combined Pero OCR Books and Pero OCR Periodicals."
+desc: "Tiny model, 8L 128H. New tokenizer 26k vocab. Basic setting, 100 epochs on combined Pero OCR Books and Pero OCR Periodicals."
 
 tokenizer: "../resources/tokenizers/new_tokenizer_26k"
 
@@ -37,7 +37,7 @@ datasets:
     path: "../../datasets/pero_ocr_prepared/old_tokenizer_dts"
 
 training:
-  num_train_epochs: 20
+  num_train_epochs: 100
   batch_size: 64
 
   optimizer:
