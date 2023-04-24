@@ -18,8 +18,7 @@ import time
 from accelerate import Accelerator
 from tqdm.auto import tqdm
 from yaml import safe_load, safe_dump
-from torch.utils.tensorboard import SummaryWriter
-from accelerate.utils import find_executable_batch_size
+from accelerate.utils import find_executable_batch_size, LoggerType
 
 
 def parse_arguments():
@@ -94,9 +93,6 @@ def main():
     log_summary(args.config, config)
     log_msg("-" * 80 + "\n")
 
-    # Init tensorboard writer
-    writer = SummaryWriter(log_dir)
-
     tokenizer = transformers.AutoTokenizer.from_pretrained(config["tokenizer"], model_max_length=512)
     dataset_name = os.path.basename(config["tokenizer"]) + "_dts"
     dataset_path = config["datasets"][dataset_name]["path"]
@@ -105,7 +101,11 @@ def main():
 
     data_collator = transformers.DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
 
-    accelerator = Accelerator()
+    accelerator = Accelerator(log_with=["tensorboard"], logging_dir=log_dir)
+
+    # Init tensorboard tracker
+    exp_name = os.path.splitext(os.path.basename(os.path.normpath(args.config)))[0]
+    accelerator.init_trackers(exp_name)
 
     @find_executable_batch_size(starting_batch_size=config["training"]["batch_size"])
     def inner_training_loop(batch_size, from_l_state=start_from_last_state):
@@ -183,6 +183,7 @@ def main():
 
         progress_bar = tqdm(range(num_training_steps + 1), initial=start_step)
         completed_steps = 0
+        total_step = 0
         gradient_accumulation_steps = 4_096 // batch_size  # * accelerator.num_processes)
         eval_steps = 200  # 2_000
         max_grad_norm = 8.0
@@ -202,12 +203,13 @@ def main():
             # Training
             model.train()
             for step, batch in enumerate(curr_train_dataloader, start=start_step):
+                total_step += 1
                 # forward an backward pass
                 outputs = model(**batch)
                 # print("Tensor device:   {}".format(batch["input_ids"].device))
                 loss = outputs.loss
                 if (step + 1) % 400 == 0:
-                    writer.add_scalar("Loss/train", loss.item(), epoch)
+                    accelerator.log({"Loss/train": loss.item()}, total_step)
                     accelerator.print({
                         "lr": lr_scheduler.get_last_lr()[0],
                         "steps": completed_steps,
@@ -217,7 +219,7 @@ def main():
                 accelerator.backward(loss)
 
                 if step % gradient_accumulation_steps == 0:
-                    writer.add_scalar("Learning_rate/train", lr_scheduler.get_last_lr()[0], step)
+                    accelerator.log({"Learning_rate/train": lr_scheduler.get_last_lr()[0]}, total_step)
                     accelerator.clip_grad_norm_(model.parameters(), max_grad_norm)
                     optimizer.step()
                     lr_scheduler.step()
@@ -253,14 +255,14 @@ def main():
                                       {"loss/eval": "{:.4f}".format(eval_loss.item()),
                                        "perplexity": "{:.4f}".format(perplexity.item())})
 
-                    writer.add_scalar("Loss/eval", eval_loss.item(), epoch)
-                    writer.add_scalar("Perplexity", perplexity.item(), epoch)
+                    accelerator.log({"Loss/eval": eval_loss.item()}, total_step)
+                    accelerator.log({"Perplexity": perplexity.item()}, total_step)
                     model.train()
 
                     # Save
                     save_model_and_state()
 
-        writer.flush()
+        accelerator.end_training()
         time.sleep(3)
 
         # Log last validation results
