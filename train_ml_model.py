@@ -54,15 +54,15 @@ def log_summary(exp_name: str, config: dict):
         cf_t["lr_scheduler"]["name"], "Warmup ratio:", cf_t["lr_scheduler"]["warmup_ratio"]))
 
 
-def save_epoch_step(epoch_step_path: str, epoch: int, step: int):
+def save_epoch_steps(epoch_step_path: str, epoch: int, step: int, com_steps: int, total_steps: int):
     with open(epoch_step_path, "w", encoding="utf-8") as f:
-        safe_dump({"epoch": epoch, "step": step}, f)
+        safe_dump({"epoch": epoch, "step": step, "com_steps": com_steps, "total_steps": total_steps}, f)
 
 
-def load_epoch_step(epoch_step_path: str):
+def load_epoch_steps(epoch_step_path: str):
     with open(epoch_step_path, encoding="utf-8") as f:
-        epoch_step_dict = safe_load(f)
-    return epoch_step_dict["epoch"], epoch_step_dict["step"]
+        epoch_steps = safe_load(f)
+    return epoch_steps["epoch"], epoch_steps["step"], epoch_steps["com_steps"], epoch_steps["total_steps"]
 
 
 # noinspection PyArgumentList
@@ -101,11 +101,10 @@ def main():
 
     data_collator = transformers.DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
 
-    accelerator = Accelerator(log_with=["tensorboard"], logging_dir=log_dir)
+    accelerator = Accelerator(log_with=["tensorboard"], project_dir=output_dir)
 
     # Init tensorboard tracker
-    exp_name = os.path.splitext(os.path.basename(os.path.normpath(args.config)))[0]
-    accelerator.init_trackers(exp_name)
+    accelerator.init_trackers("logs")
 
     @find_executable_batch_size(starting_batch_size=config["training"]["batch_size"])
     def inner_training_loop(batch_size, from_l_state=start_from_last_state):
@@ -143,11 +142,14 @@ def main():
                                       betas=(cf_optimizer["beta1"], cf_optimizer["beta2"]),
                                       weight_decay=cf_optimizer["weight_decay"])
 
+        gradient_accumulation_steps = 4_096 // (batch_size * accelerator.num_processes)
         num_train_epochs = config["training"]["num_train_epochs"]
         num_update_steps_per_epoch = len(train_dataloader)
-        num_training_steps = num_train_epochs * num_update_steps_per_epoch
+        num_training_steps = num_train_epochs * num_update_steps_per_epoch // gradient_accumulation_steps
         start_epoch = 0
         start_step = 1
+        completed_steps = 0
+        total_steps = 1
 
         lr_scheduler = transformers.get_scheduler(
             config["training"]["lr_scheduler"]["name"],
@@ -163,9 +165,11 @@ def main():
         # load training state from checkpoint
         if args.from_state:
             accelerator.load_state(train_state_dir)
-            last_state_epoch, last_state_step = load_epoch_step(os.path.join(train_state_dir, epoch_step_file))
-            train_dataloader_last = accelerator.skip_first_batches(train_dataloader, last_state_step)
-            start_epoch, start_step = last_state_epoch, last_state_step + 1
+            last_epoch, last_step, last_com_steps, last_total_steps = \
+                load_epoch_steps(os.path.join(train_state_dir, epoch_step_file))
+            train_dataloader_last = accelerator.skip_first_batches(train_dataloader, last_step)
+            start_epoch, start_step = last_epoch, last_step + 1
+            completed_steps, total_steps = last_com_steps, last_total_steps
             from_l_state = True
             if accelerator.is_main_process:
                 log_msg(f"---------- Start training from last state. ----------")
@@ -177,15 +181,13 @@ def main():
             unwrapped_model.save_pretrained(model_dir, save_function=accelerator.save)
             if accelerator.is_main_process:
                 tokenizer.save_pretrained(model_dir)
-                save_epoch_step(os.path.join(train_state_dir, epoch_step_file), epoch, step)
+                save_epoch_steps(os.path.join(train_state_dir, epoch_step_file),
+                                 epoch, step, completed_steps, total_steps)
             accelerator.save_state(train_state_dir)
             accelerator.print(f"Model and train state were successfully saved, last step:   {step}")
 
-        progress_bar = tqdm(range(num_training_steps + 1), initial=start_step)
-        completed_steps = 0
-        total_step = 0
-        gradient_accumulation_steps = 4_096 // (batch_size * accelerator.num_processes)
-        eval_steps = 200  # 2_000
+        progress_bar = tqdm(range(num_training_steps), initial=completed_steps)
+        eval_steps = 200
         max_grad_norm = 8.0
         eval_loss, perplexity = torch.Tensor(1), torch.Tensor(1)
         if accelerator.is_main_process:
@@ -203,29 +205,31 @@ def main():
             # Training
             model.train()
             for step, batch in enumerate(curr_train_dataloader, start=start_step):
-                total_step += 1
                 # forward an backward pass
                 outputs = model(**batch)
                 # print("Tensor device:   {}".format(batch["input_ids"].device))
                 loss = outputs.loss
-                if (step + 1) % 400 == 0:
-                    accelerator.log({"Loss/train": loss.item()}, total_step)
+                if step % 400 == 0:
+                    accelerator.log({"Loss/train": loss.item()}, total_steps)
                     accelerator.print({
-                        "lr": lr_scheduler.get_last_lr()[0],
-                        "steps": completed_steps,
+                        "steps": step,
+                        "com_steps": completed_steps,
+                        "total_steps": total_steps,
+                        "Learning_rate/train": lr_scheduler.get_last_lr()[0],
                         "Loss/train": loss.item(),
                     })
                 loss = loss / gradient_accumulation_steps
                 accelerator.backward(loss)
 
                 if step % gradient_accumulation_steps == 0:
-                    accelerator.log({"Learning_rate/train": lr_scheduler.get_last_lr()[0]}, total_step)
+                    accelerator.log({"Learning_rate/train": lr_scheduler.get_last_lr()[0]}, total_steps)
                     accelerator.clip_grad_norm_(model.parameters(), max_grad_norm)
                     optimizer.step()
                     lr_scheduler.step()
                     optimizer.zero_grad()
                     completed_steps += 1
-                progress_bar.update(1)
+                    progress_bar.update(1)
+                total_steps += 1
 
                 # check for time limit
                 curr_time = time.monotonic()
@@ -255,8 +259,8 @@ def main():
                                       {"loss/eval": "{:.4f}".format(eval_loss.item()),
                                        "perplexity": "{:.4f}".format(perplexity.item())})
 
-                    accelerator.log({"Loss/eval": eval_loss.item()}, total_step)
-                    accelerator.log({"Perplexity": perplexity.item()}, total_step)
+                    accelerator.log({"Loss/eval": eval_loss.item()}, total_steps)
+                    accelerator.log({"Perplexity": perplexity.item()}, total_steps)
                     model.train()
 
                     # Save
