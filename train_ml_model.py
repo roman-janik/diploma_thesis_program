@@ -114,7 +114,7 @@ def main():
         if accelerator.is_main_process:
             log_msg(f"Current batch size: {batch_size}")
         accelerator.print(f"Number of accelerator processes / device workers:   {accelerator.num_processes}")
-        
+
         train_dataloader = torch.utils.data.DataLoader(
             pero_ocr_dataset["train"],
             collate_fn=data_collator,
@@ -207,11 +207,11 @@ def main():
                 # print("Tensor device:   {}".format(batch["input_ids"].device))
                 loss = outputs.loss
                 if (step + 1) % 400 == 0:
-                    writer.add_scalar("Loss/train", loss.item() * gradient_accumulation_steps, epoch)
+                    writer.add_scalar("Loss/train", loss.item(), epoch)
                     accelerator.print({
                         "lr": lr_scheduler.get_last_lr()[0],
                         "steps": completed_steps,
-                        "Loss/train": loss.item() * gradient_accumulation_steps,
+                        "Loss/train": loss.item(),
                     })
                 loss = loss / gradient_accumulation_steps
                 accelerator.backward(loss)
