@@ -109,11 +109,12 @@ def main():
 
     @find_executable_batch_size(starting_batch_size=config["training"]["batch_size"])
     def inner_training_loop(batch_size, from_l_state=start_from_last_state):
-        log_msg(f"Current batch size: {batch_size}")
         nonlocal accelerator  # Ensure they can be used in our context
         accelerator.free_memory()  # Free all lingering references
+        if accelerator.is_main_process:
+            log_msg(f"Current batch size: {batch_size}")
         accelerator.print(f"Number of accelerator processes / device workers:   {accelerator.num_processes}")
-
+        
         train_dataloader = torch.utils.data.DataLoader(
             pero_ocr_dataset["train"],
             collate_fn=data_collator,
@@ -133,8 +134,9 @@ def main():
         model = transformers.RobertaForMaskedLM(config=roberta_config)
 
         # print model size
-        model_size = sum(t.numel() for t in model.parameters())
-        log_msg(f"Model size: {model_size / 1000 ** 2:.1f}M parameters")
+        if accelerator.is_main_process:
+            model_size = sum(t.numel() for t in model.parameters())
+            log_msg(f"Model size: {model_size / 1000 ** 2:.1f}M parameters")
 
         cf_optimizer = config["training"]["optimizer"]
         optimizer = torch.optim.AdamW(model.parameters(), lr=cf_optimizer["learning_rate"],
@@ -157,7 +159,6 @@ def main():
         model, optimizer, train_dataloader, eval_dataloader, lr_scheduler = accelerator.prepare(
             model, optimizer, train_dataloader, eval_dataloader, lr_scheduler
         )
-        accelerator.register_for_checkpointing(lr_scheduler)
 
         # load training state from checkpoint
         if args.from_state:
@@ -166,8 +167,9 @@ def main():
             train_dataloader_last = accelerator.skip_first_batches(train_dataloader, last_state_step)
             start_epoch, start_step = last_state_epoch, last_state_step + 1
             from_l_state = True
-            log_msg(f"---------- Start training from last state. ----------")
-            log_msg(f"Start epoch:   {start_epoch}, start step:   {start_step}\n")
+            if accelerator.is_main_process:
+                log_msg(f"---------- Start training from last state. ----------")
+                log_msg(f"Start epoch:   {start_epoch}, start step:   {start_step}\n")
 
         def save_model_and_state():
             accelerator.wait_for_everyone()
@@ -183,8 +185,10 @@ def main():
         completed_steps = 0
         gradient_accumulation_steps = 4_096 // batch_size  # * accelerator.num_processes)
         eval_steps = 200  # 2_000
+        max_grad_norm = 8.0
         eval_loss, perplexity = torch.Tensor(1), torch.Tensor(1)
-        log_msg(f"Current gradient accumulation steps: {gradient_accumulation_steps}")
+        if accelerator.is_main_process:
+            log_msg(f"Current gradient accumulation steps: {gradient_accumulation_steps}")
 
         # Training loop
         for epoch in range(start_epoch, num_train_epochs):
@@ -214,7 +218,7 @@ def main():
 
                 if step % gradient_accumulation_steps == 0:
                     writer.add_scalar("Learning_rate/train", lr_scheduler.get_last_lr()[0], step)
-                    accelerator.clip_grad_norm_(model.parameters(), 8.0)
+                    accelerator.clip_grad_norm_(model.parameters(), max_grad_norm)
                     optimizer.step()
                     lr_scheduler.step()
                     optimizer.zero_grad()
@@ -260,11 +264,12 @@ def main():
         time.sleep(3)
 
         # Log last validation results
-        log_msg("-" * 80 + "\nExperiment results:\n")
-        log_msg("Validation set evaluation:")
-        last_val_results = {"Loss/eval": "{:.4f}".format(eval_loss.item()),
-                            "perplexity": "{:.4f}".format(perplexity.item())}
-        log_msg(f"Last epoch {epoch}:\n{last_val_results}\n")
+        if accelerator.is_main_process:
+            log_msg("-" * 80 + "\nExperiment results:\n")
+            log_msg("Validation set evaluation:")
+            last_val_results = {"Loss/eval": "{:.4f}".format(eval_loss.item()),
+                                "perplexity": "{:.4f}".format(perplexity.item())}
+            log_msg(f"Last epoch {epoch}:\n{last_val_results}\n")
 
     inner_training_loop()
 
