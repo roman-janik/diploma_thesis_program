@@ -26,8 +26,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', required=True, help='Training configuration file.')
     parser.add_argument('-t', '--timeout', type=float, required=True, help='Training timeout in hours.')
-    parser.add_argument('-m', '--mixed_precision', default=False, action="store_true",
-                        help='Training with mixed precision fp 16.')
+    parser.add_argument('-m', '--mixed_precision', default="no", nargs="?", help='Training with mixed precision fp 16.')
     parser.add_argument('-s', '--from_state', default=False, action="store_true",
                         help='Load training state from checkpoint.')
     args = parser.parse_args()
@@ -82,30 +81,34 @@ def main():
     # Set timeout limit
     twenty_min = 1200.
     sec_in_hour = 3600.
-    # time_limit = 1800.  # 10 min before timeout
+    # time_limit = 1800.
     time_limit = (args.timeout * sec_in_hour) - twenty_min  # 20 min before timeout
 
     # Load config file
     with open(args.config, 'r') as config_file:
         config = safe_load(config_file)
 
+    # Init accelerator, set logging and mixed precision
+    accelerator = Accelerator(log_with=["tensorboard"], project_dir=output_dir, mixed_precision=args.mixed_precision)
+
     # Start logging, print experiment configuration
-    logging.basicConfig(filename=os.path.join(output_dir, "experiment_results.txt"), level=logging.INFO,
-                        encoding='utf-8', format='%(message)s')
-    log_msg("Experiment summary:\n")
-    log_summary(args.config, config)
-    log_msg("-" * 80 + "\n")
+    if accelerator.is_main_process:
+        logging.basicConfig(filename=os.path.join(output_dir, "experiment_results.txt"), level=logging.INFO,
+                            encoding='utf-8', format='%(message)s')
+        log_msg("Experiment summary:\n")
+        log_summary(args.config, config)
+        log_msg("-" * 80 + "\n")
 
     tokenizer = transformers.AutoTokenizer.from_pretrained(config["tokenizer"], model_max_length=512)
     dataset_name = os.path.basename(config["tokenizer"]) + "_dts"
     dataset_path = config["datasets"][dataset_name]["path"]
     pero_ocr_dataset = datasets.load_from_disk(dataset_path)
-    print(pero_ocr_dataset)
+    accelerator.print(pero_ocr_dataset)
 
     data_collator = transformers.DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
 
-    accelerator = Accelerator(log_with=["tensorboard"], project_dir=output_dir,
-                              mixed_precision="fp16" if args.mixed_precision else "no")
+    if accelerator.is_main_process and args.mixed_precision:
+        log_msg("Training with mixed precision fp16!")
 
     # Init tensorboard tracker
     accelerator.init_trackers("logs")
@@ -122,21 +125,19 @@ def main():
             pero_ocr_dataset["train"],
             collate_fn=data_collator,
             batch_size=batch_size,
-            # batch_size=config["training"]["batch_size"],
         )
 
         eval_dataloader = torch.utils.data.DataLoader(
             pero_ocr_dataset["test"],
             collate_fn=data_collator,
             batch_size=batch_size,
-            # batch_size=config["training"]["batch_size"],
         )
 
         roberta_config = transformers.RobertaConfig.from_pretrained(config["models"]["trained_model"]["config"])
 
         model = transformers.RobertaForMaskedLM(config=roberta_config)
 
-        # print model size
+        # Print model size
         if accelerator.is_main_process:
             model_size = sum(t.numel() for t in model.parameters())
             log_msg(f"Model size: {model_size / 1000 ** 2:.1f}M parameters")
@@ -166,7 +167,7 @@ def main():
             model, optimizer, train_dataloader, eval_dataloader, lr_scheduler
         )
 
-        # load training state from checkpoint
+        # Load training state from checkpoint
         if args.from_state:
             last_state_dir = max(glob(os.path.join(train_state_dir, '*/')), key=os.path.getmtime)
             accelerator.load_state(last_state_dir)
@@ -238,7 +239,7 @@ def main():
                     progress_bar.update(1)
                 total_steps += 1
 
-                # check for time limit
+                # Check for time limit
                 curr_time = time.monotonic()
                 if curr_time - start_time > time_limit:
                     save_model_and_state()
