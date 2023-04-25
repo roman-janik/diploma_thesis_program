@@ -18,7 +18,8 @@ import time
 from accelerate import Accelerator
 from tqdm.auto import tqdm
 from yaml import safe_load, safe_dump
-from accelerate.utils import find_executable_batch_size, LoggerType
+from accelerate.utils import find_executable_batch_size
+from glob import glob
 
 
 def parse_arguments():
@@ -55,6 +56,7 @@ def log_summary(exp_name: str, config: dict):
 
 
 def save_epoch_steps(epoch_step_path: str, epoch: int, step: int, com_steps: int, total_steps: int):
+    os.mkdir(os.path.dirname(epoch_step_path))
     with open(epoch_step_path, "w", encoding="utf-8") as f:
         safe_dump({"epoch": epoch, "step": step, "com_steps": com_steps, "total_steps": total_steps}, f)
 
@@ -72,7 +74,6 @@ def main():
     model_dir = "../results/model"
     train_state_dir = "../results/train_state"
     epoch_step_file = "epoch_step.yaml"
-    log_dir = "../results/logs"
     start_from_last_state = False
     args = parse_arguments()
 
@@ -164,9 +165,10 @@ def main():
 
         # load training state from checkpoint
         if args.from_state:
-            accelerator.load_state(train_state_dir)
+            last_state_dir = max(glob(os.path.join(train_state_dir, '*/')), key=os.path.getmtime)
+            accelerator.load_state(last_state_dir)
             last_epoch, last_step, last_com_steps, last_total_steps = \
-                load_epoch_steps(os.path.join(train_state_dir, epoch_step_file))
+                load_epoch_steps(os.path.join(last_state_dir, epoch_step_file))
             train_dataloader_last = accelerator.skip_first_batches(train_dataloader, last_step)
             start_epoch, start_step = last_epoch, last_step + 1
             completed_steps, total_steps = last_com_steps, last_total_steps
@@ -181,9 +183,9 @@ def main():
             unwrapped_model.save_pretrained(model_dir, save_function=accelerator.save)
             if accelerator.is_main_process:
                 tokenizer.save_pretrained(model_dir)
-                save_epoch_steps(os.path.join(train_state_dir, epoch_step_file),
+                save_epoch_steps(os.path.join(train_state_dir, f"st_epoch_{epoch}_step_{step}", epoch_step_file),
                                  epoch, step, completed_steps, total_steps)
-            accelerator.save_state(train_state_dir)
+            accelerator.save_state(os.path.join(train_state_dir, f"st_epoch_{epoch}_step_{step}"))
             accelerator.print(f"Model and train state were successfully saved, last step:   {step}")
 
         progress_bar = tqdm(range(num_training_steps), initial=completed_steps)
