@@ -157,7 +157,7 @@ def main():
         start_step = 1
         completed_steps = 0
         total_steps = 1
-        eval_steps = 4 #200
+        eval_steps = 200
 
         lr_scheduler = transformers.get_scheduler(
             config["training"]["lr_scheduler"]["name"],
