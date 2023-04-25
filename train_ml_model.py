@@ -268,6 +268,9 @@ def main():
                     # Save
                     save_model_and_state()
 
+        # Training completed - save
+        save_model_and_state()
+
         accelerator.end_training()
         time.sleep(3)
 
