@@ -147,7 +147,8 @@ def main():
                                       betas=(cf_optimizer["beta1"], cf_optimizer["beta2"]),
                                       weight_decay=cf_optimizer["weight_decay"])
 
-        gradient_accumulation_steps = 4_096 // (batch_size * accelerator.num_processes)
+        effective_batch_size = 4_096
+        gradient_accumulation_steps = effective_batch_size // (batch_size * accelerator.num_processes)
         num_train_epochs = config["training"]["num_train_epochs"]
         num_update_steps_per_epoch = len(train_dataloader)
         num_training_steps = num_train_epochs * num_update_steps_per_epoch // gradient_accumulation_steps
@@ -198,6 +199,7 @@ def main():
         max_grad_norm = 8.0
         eval_loss, perplexity = torch.Tensor(1), torch.Tensor(1)
         if accelerator.is_main_process:
+            log_msg(f"Effective batch size: {effective_batch_size}")
             log_msg(f"Current gradient accumulation steps: {gradient_accumulation_steps}")
 
         # Training loop
