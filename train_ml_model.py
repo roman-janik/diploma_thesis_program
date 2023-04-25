@@ -189,7 +189,8 @@ def main():
                 save_epoch_steps(os.path.join(train_state_dir, f"st_epoch_{epoch}_step_{step}", epoch_step_file),
                                  epoch, step, completed_steps, total_steps)
             accelerator.save_state(os.path.join(train_state_dir, f"st_epoch_{epoch}_step_{step}"))
-            accelerator.print(f"Model and train state were successfully saved, last step:   {step}")
+            accelerator.print(f"Model and train state were successfully saved, last step:   {step}, "
+                              f"completed steps:   {completed_steps}, total steps:   {total_steps}")
 
         progress_bar = tqdm(range(num_training_steps), initial=completed_steps)
         eval_steps = 200
