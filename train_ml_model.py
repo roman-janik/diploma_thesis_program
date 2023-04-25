@@ -218,9 +218,9 @@ def main():
                 if step % 400 == 0:
                     accelerator.log({"Loss/train": loss.item()}, total_steps)
                     accelerator.print({
-                        "steps": step,
-                        "com_steps": completed_steps,
-                        "total_steps": total_steps,
+                        "Steps": step,
+                        "Completed_steps": completed_steps,
+                        "Total_steps": total_steps,
                         "Learning_rate/train": lr_scheduler.get_last_lr()[0],
                         "Loss/train": loss.item(),
                     })
@@ -262,9 +262,9 @@ def main():
                     except OverflowError:
                         perplexity = float("inf")
 
-                    accelerator.print(f"\nepoch {epoch}:",
-                                      {"loss/eval": "{:.4f}".format(eval_loss.item()),
-                                       "perplexity": "{:.4f}".format(perplexity.item())})
+                    accelerator.print(f"\nEpoch {epoch}:",
+                                      {"Loss/eval": "{:.4f}".format(eval_loss.item()),
+                                       "Perplexity": "{:.4f}".format(perplexity.item())})
 
                     accelerator.log({"Loss/eval": eval_loss.item()}, total_steps)
                     accelerator.log({"Perplexity": perplexity.item()}, total_steps)
