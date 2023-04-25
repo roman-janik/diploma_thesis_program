@@ -26,6 +26,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', required=True, help='Training configuration file.')
     parser.add_argument('-t', '--timeout', type=float, required=True, help='Training timeout in hours.')
+    parser.add_argument('-m', '--mixed_precision', default=False, action="store_true",
+                        help='Training with mixed precision fp 16.')
     parser.add_argument('-s', '--from_state', default=False, action="store_true",
                         help='Load training state from checkpoint.')
     args = parser.parse_args()
@@ -102,7 +104,8 @@ def main():
 
     data_collator = transformers.DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
 
-    accelerator = Accelerator(log_with=["tensorboard"], project_dir=output_dir)
+    accelerator = Accelerator(log_with=["tensorboard"], project_dir=output_dir,
+                              mixed_precision="fp16" if args.mixed_precision else "no")
 
     # Init tensorboard tracker
     accelerator.init_trackers("logs")
@@ -227,7 +230,8 @@ def main():
                     accelerator.log({"Learning_rate/train": lr_scheduler.get_last_lr()[0]}, total_steps)
                     accelerator.clip_grad_norm_(model.parameters(), max_grad_norm)
                     optimizer.step()
-                    lr_scheduler.step()
+                    if not accelerator.optimizer_step_was_skipped:
+                        lr_scheduler.step()
                     optimizer.zero_grad()
                     completed_steps += 1
                     progress_bar.update(1)
