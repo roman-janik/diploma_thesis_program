@@ -57,7 +57,8 @@ def log_summary(exp_name: str, config: dict):
 
 
 def save_epoch_steps(epoch_step_path: str, epoch: int, step: int, com_steps: int, total_steps: int):
-    os.mkdir(os.path.dirname(epoch_step_path))
+    if not os.path.isdir(os.path.dirname(epoch_step_path)):
+        os.mkdir(os.path.dirname(epoch_step_path))
     with open(epoch_step_path, "w", encoding="utf-8") as f:
         safe_dump({"epoch": epoch, "step": step, "com_steps": com_steps, "total_steps": total_steps}, f)
 
@@ -156,6 +157,7 @@ def main():
         start_step = 1
         completed_steps = 0
         total_steps = 1
+        eval_steps = 4 #200
 
         lr_scheduler = transformers.get_scheduler(
             config["training"]["lr_scheduler"]["name"],
@@ -195,7 +197,6 @@ def main():
                               f"completed steps:   {completed_steps}, total steps:   {total_steps}")
 
         progress_bar = tqdm(range(num_training_steps), initial=completed_steps)
-        eval_steps = 200
         max_grad_norm = 8.0
         eval_loss, perplexity = torch.Tensor(1), torch.Tensor(1)
         if accelerator.is_main_process:
@@ -256,7 +257,8 @@ def main():
                     for eval_batch in eval_dataloader:
                         with torch.no_grad():
                             outputs = model(**eval_batch)
-                        eval_losses.append(accelerator.gather(outputs.loss).reshape(1))
+                        eval_loss_t = accelerator.gather(outputs.loss)
+                        eval_losses.append(eval_loss_t if accelerator.num_processes > 1 else eval_loss_t.reshape(1))
 
                     eval_loss = torch.mean(torch.cat(eval_losses))
 
