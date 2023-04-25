@@ -107,7 +107,7 @@ def main():
 
     data_collator = transformers.DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
 
-    if accelerator.is_main_process and args.mixed_precision:
+    if accelerator.is_main_process and args.mixed_precision == "fp16":
         log_msg("Training with mixed precision fp16!")
 
     # Init tensorboard tracker
