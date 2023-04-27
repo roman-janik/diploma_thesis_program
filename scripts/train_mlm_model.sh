@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -q gpu
-#PBS -l select=1:ncpus=4:ngpus=4:gpu_cap=cuda80:gpu_mem=20gb:mem=80gb:scratch_ssd=20gb:cluster=galdor
+#PBS -l select=1:ncpus=8:ngpus=4:gpu_cap=cuda80:gpu_mem=20gb:mem=80gb:scratch_ssd=20gb:cluster=galdor
 #PBS -j oe
 
 # Author: Roman Janík
