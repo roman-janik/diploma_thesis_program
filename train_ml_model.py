@@ -119,8 +119,8 @@ def main():
         nonlocal accelerator  # Ensure they can be used in our context
         accelerator.free_memory()  # Free all lingering references
         if accelerator.is_main_process:
-            log_msg(f"Current batch size: {batch_size}")
-        accelerator.print(f"Number of accelerator processes / device workers:   {accelerator.num_processes}")
+            log_msg("{:<38}{}".format("Current batch size:", batch_size))
+        accelerator.print("{:<38}{}".format("Number of accelerator processes:", accelerator.num_processes))
 
         train_dataloader = torch.utils.data.DataLoader(
             pero_ocr_dataset["train"],
@@ -141,7 +141,7 @@ def main():
         # Print model size
         if accelerator.is_main_process:
             model_size = sum(t.numel() for t in model.parameters())
-            log_msg(f"Model size: {model_size / 1000 ** 2:.1f}M parameters")
+            log_msg("{:<38}{:.1f}{}".format("Model size:", model_size / 1000 ** 2, " M parameters"))
 
         cf_optimizer = config["training"]["optimizer"]
         optimizer = torch.optim.AdamW(model.parameters(), lr=cf_optimizer["learning_rate"],
@@ -158,6 +158,11 @@ def main():
         completed_steps = 0
         total_steps = 1
         eval_steps = 200
+
+        if accelerator.is_main_process:
+            log_msg("{:<38}{}".format("Effective batch size:", effective_batch_size))
+            log_msg("{:<38}{}".format("Current gradient accumulation steps:", gradient_accumulation_steps))
+            print("", flush=True)
 
         lr_scheduler = transformers.get_scheduler(
             config["training"]["lr_scheduler"]["name"],
@@ -183,6 +188,7 @@ def main():
             if accelerator.is_main_process:
                 log_msg(f"---------- Start training from last state. ----------")
                 log_msg(f"Start epoch:   {start_epoch}, start step:   {start_step}\n")
+                print("", flush=True)
 
         def save_model_and_state():
             accelerator.wait_for_everyone()
@@ -199,9 +205,6 @@ def main():
         progress_bar = tqdm(range(num_training_steps), initial=completed_steps)
         max_grad_norm = 8.0
         eval_loss, perplexity = torch.Tensor(1), torch.Tensor(1)
-        if accelerator.is_main_process:
-            log_msg(f"Effective batch size: {effective_batch_size}")
-            log_msg(f"Current gradient accumulation steps: {gradient_accumulation_steps}")
 
         # Training loop
         for epoch in range(start_epoch, num_train_epochs):
@@ -294,8 +297,9 @@ def main():
 
     inner_training_loop()
 
-    end_time = time.monotonic()
-    log_msg("Elapsed script time: {}\n".format(datetime.timedelta(seconds=end_time - start_time)))
+    if accelerator.is_main_process:
+        end_time = time.monotonic()
+        log_msg("Elapsed script time: {}\n".format(datetime.timedelta(seconds=end_time - start_time)))
 
 
 if __name__ == "__main__":
