@@ -7,7 +7,7 @@
 
 desc: "Mini model, 4L 256H. New tokenizer 12k vocab. Basic setting, 100 epochs on combined Pero OCR Books and Pero OCR Periodicals."
 
-tokenizer: "../resources/tokenizers/new_tokenizer"
+tokenizer: "../resources/tokenizers/new_tokenizer_12k"
 
 models:
   trained_model:
@@ -30,6 +30,11 @@ datasets:
     desc: "Pero OCR prepared dataset. Concatenated Pero OCR Books and Pero OCR Periodicals datasets.
        Dataset is tokenized, then concatenated and chunked by model input size. Dataset is ready for training.."
     path: "../../datasets/pero_ocr_prepared/new_tokenizer_26k_dts"
+  new_tokenizer_12k_dts:
+    name: "Pero OCR prepared dataset - new tokenizer with 12k vocabulary"
+    desc: "Pero OCR prepared dataset. Concatenated Pero OCR Books and Pero OCR Periodicals datasets.
+       Dataset is tokenized, then concatenated and chunked by model input size. Dataset is ready for training.."
+    path: "../../datasets/pero_ocr_prepared/new_tokenizer_12k_dts"
   old_tokenizer_dts:
     name: "Pero OCR prepared dataset - old tokenizer"
     desc: "Pero OCR prepared dataset. Concatenated Pero OCR Books and Pero OCR Periodicals datasets.
