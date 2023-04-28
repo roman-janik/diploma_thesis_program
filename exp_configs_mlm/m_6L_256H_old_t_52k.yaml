@@ -1,0 +1,50 @@
+# Author: Roman Janík
+# Experiment YAML configuration file
+#
+# Notes:
+#  Paths are relative to training script working directory.
+#  Datasets are preprocessed to Hugging Face arrow format
+
+desc: "Medium model, 6L 256H. Old tokenizer 52k vocab. Basic setting, 100 epochs on combined Pero OCR Books and Pero OCR Periodicals."
+
+tokenizer: "../resources/tokenizers/old_tokenizer"
+
+models:
+  trained_model:
+    name: "Czech RoBERTa small PyTorch"
+    desc: "Czech version of own small RoBERTa transformer model. Hugging Face PyTorch type."
+    config: "exp_configs_models/proposal.json"
+  old_model:
+    name: "RobeCzech base PyTorch"
+    desc: "Czech version of RoBERTa transformer model. Hugging Face PyTorch type."
+    path: "../resources/robeczech-base-pytorch"
+
+datasets:
+  new_tokenizer_dts:
+    name: "Pero OCR prepared dataset - new tokenizer"
+    desc: "Pero OCR prepared dataset. Concatenated Pero OCR Books and Pero OCR Periodicals datasets.
+     Dataset is tokenized, then concatenated and chunked by model input size. Dataset is ready for training.."
+    path: "../../datasets/pero_ocr_prepared/new_tokenizer_dts"
+  new_tokenizer_26k_dts:
+    name: "Pero OCR prepared dataset - new tokenizer with 26k vocabulary"
+    desc: "Pero OCR prepared dataset. Concatenated Pero OCR Books and Pero OCR Periodicals datasets.
+       Dataset is tokenized, then concatenated and chunked by model input size. Dataset is ready for training.."
+    path: "../../datasets/pero_ocr_prepared/new_tokenizer_26k_dts"
+  old_tokenizer_dts:
+    name: "Pero OCR prepared dataset - old tokenizer"
+    desc: "Pero OCR prepared dataset. Concatenated Pero OCR Books and Pero OCR Periodicals datasets.
+     Dataset is tokenized, then concatenated and chunked by model input size. Dataset is ready for training.."
+    path: "../../datasets/pero_ocr_prepared/old_tokenizer_dts"
+
+training:
+  num_train_epochs: 100
+  batch_size: 128
+
+  optimizer:
+    learning_rate: 1.e-3
+    weight_decay: 0.1
+    beta1: 0.9
+    beta2: 0.98
+  lr_scheduler:
+    name: "cosine"
+    warmup_ratio: 0.04
