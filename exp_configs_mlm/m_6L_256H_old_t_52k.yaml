@@ -13,7 +13,7 @@ models:
   trained_model:
     name: "Czech RoBERTa small PyTorch"
     desc: "Czech version of own small RoBERTa transformer model. Hugging Face PyTorch type."
-    config: "exp_configs_models/proposal.json"
+    config: "exp_configs_models/m_6L_256H_old_t_52k.json"
   old_model:
     name: "RobeCzech base PyTorch"
     desc: "Czech version of RoBERTa transformer model. Hugging Face PyTorch type."
