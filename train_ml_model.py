@@ -80,10 +80,10 @@ def main():
     args = parse_arguments()
 
     # Set timeout limit
-    twenty_min = 1200.
+    thirty_min = 1800.
     sec_in_hour = 3600.
     # time_limit = 1800.
-    time_limit = (args.timeout * sec_in_hour) - twenty_min  # 20 min before timeout
+    time_limit = (args.timeout * sec_in_hour) - thirty_min  # 30 min before timeout
 
     # Load config file
     with open(args.config, 'r') as config_file:
