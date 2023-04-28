@@ -49,12 +49,14 @@ cd ../..
 # Download datasets
 printf "Download datasets\n"
 mkdir datasets datasets/pero_ocr_prepared datasets/pero_ocr_prepared/new_tokenizer_dts
-mkdir datasets/pero_ocr_prepared/new_tokenizer_26k_dts datasets/pero_ocr_prepared/old_tokenizer_dts
+mkdir datasets/pero_ocr_prepared/new_tokenizer_26k_dts datasets/pero_ocr_prepared/old_tokenizer_dts datasets/pero_ocr_prepared/new_tokenizer_12k_dts
 cp "$DATAPATH"/pero_ocr_prepared/new_tokenizer_dts/new_tokenizer_dts.zip datasets
 cp "$DATAPATH"/pero_ocr_prepared/new_tokenizer_26k_dts/new_tokenizer_26k_dts.zip "$DATAPATH"/pero_ocr_prepared/old_tokenizer_dts/old_tokenizer_dts.zip datasets
+cp "$DATAPATH"/pero_ocr_prepared/new_tokenizer_12k_dts/new_tokenizer_12k_dts.zip datasets
 unzip -d datasets/pero_ocr_prepared/new_tokenizer_dts datasets/new_tokenizer_dts.zip
 unzip -d datasets/pero_ocr_prepared/new_tokenizer_26k_dts datasets/new_tokenizer_26k_dts.zip
 unzip -d datasets/pero_ocr_prepared/old_tokenizer_dts datasets/old_tokenizer_dts.zip
+unzip -d datasets/pero_ocr_prepared/new_tokenizer_12k_dts datasets/new_tokenizer_12k_dts.zip
 
 # Download model
 printf "Download model\n"
