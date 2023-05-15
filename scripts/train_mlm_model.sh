@@ -124,7 +124,8 @@ do
       printf "Training exit code: %s\n" "$?"
   else
       last_result_dir=$(ls "$RESPATH" | grep "$config_name" | tail -n 1)
-      last_train_state=$(ls -t "$RESPATH"/"$last_result_dir"/train_state/*/ | head -n 1)
+      last_train_state=$(ls -t "$RESPATH""$last_result_dir"/train_state/*/ | head -n 1)
+      last_train_state=${last_train_state%:*}
       mkdir ../results/train_state
       cp -r "$last_train_state" ../results/train_state
       accelerate launch --multi_gpu train_ml_model.py --config "$config_file" --timeout "$stime" --mixed_precision "$mixed_precision" --from_state
