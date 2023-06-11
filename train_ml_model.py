@@ -56,17 +56,19 @@ def log_summary(exp_name: str, config: dict):
         cf_t["lr_scheduler"]["name"], "Warmup ratio:", cf_t["lr_scheduler"]["warmup_ratio"]))
 
 
-def save_epoch_steps(epoch_step_path: str, epoch: int, step: int, com_steps: int, total_steps: int):
+def save_epoch_steps(epoch_step_path: str, epoch: int, step: int, com_steps: int, total_steps: int, batch_size: int):
     if not os.path.isdir(os.path.dirname(epoch_step_path)):
         os.mkdir(os.path.dirname(epoch_step_path))
     with open(epoch_step_path, "w", encoding="utf-8") as f:
-        safe_dump({"epoch": epoch, "step": step, "com_steps": com_steps, "total_steps": total_steps}, f)
+        safe_dump({"epoch": epoch, "step": step, "com_steps": com_steps, "total_steps": total_steps,
+                   "batch_size": batch_size}, f)
 
 
 def load_epoch_steps(epoch_step_path: str):
     with open(epoch_step_path, encoding="utf-8") as f:
         epoch_steps = safe_load(f)
-    return epoch_steps["epoch"], epoch_steps["step"], epoch_steps["com_steps"], epoch_steps["total_steps"]
+    return epoch_steps["epoch"], epoch_steps["step"], epoch_steps["com_steps"], epoch_steps["total_steps"], \
+        epoch_steps["batch_size"]
 
 
 # noinspection PyArgumentList
@@ -114,7 +116,14 @@ def main():
     # Init tensorboard tracker
     accelerator.init_trackers("logs")
 
-    @find_executable_batch_size(starting_batch_size=config["training"]["batch_size"])
+    # Set start batch size
+    if args.from_state:
+        last_state_dir = max(glob(os.path.join(train_state_dir, '*/')), key=os.path.getmtime)
+        start_batch_size = load_epoch_steps(os.path.join(last_state_dir, epoch_step_file))[4]
+    else:
+        start_batch_size = config["training"]["batch_size"]
+
+    @find_executable_batch_size(starting_batch_size=start_batch_size)
     def inner_training_loop(batch_size, from_l_state=start_from_last_state):
         nonlocal accelerator  # Ensure they can be used in our context
         accelerator.free_memory()  # Free all lingering references
@@ -177,9 +186,8 @@ def main():
 
         # Load training state from checkpoint
         if args.from_state:
-            last_state_dir = max(glob(os.path.join(train_state_dir, '*/')), key=os.path.getmtime)
             accelerator.load_state(last_state_dir)
-            last_epoch, last_step, last_com_steps, last_total_steps = \
+            last_epoch, last_step, last_com_steps, last_total_steps, _ = \
                 load_epoch_steps(os.path.join(last_state_dir, epoch_step_file))
             train_dataloader_last = accelerator.skip_first_batches(train_dataloader, last_step)
             start_epoch, start_step = last_epoch, last_step + 1
@@ -197,7 +205,7 @@ def main():
             if accelerator.is_main_process:
                 tokenizer.save_pretrained(model_dir)
                 save_epoch_steps(os.path.join(train_state_dir, f"st_epoch_{epoch}_step_{step}", epoch_step_file),
-                                 epoch, step, completed_steps, total_steps)
+                                 epoch, step, completed_steps, total_steps, batch_size)
             accelerator.save_state(os.path.join(train_state_dir, f"st_epoch_{epoch}_step_{step}"))
             accelerator.print(f"Model and train state were successfully saved, last step:   {step}, "
                               f"completed steps:   {completed_steps}, total steps:   {total_steps}")
