@@ -251,7 +251,6 @@ def main():
                     optimizer.zero_grad()
                     completed_steps += 1
                     progress_bar.update(1)
-                total_steps += 1
 
                 # Check for time limit
                 curr_time = time.monotonic()
@@ -288,6 +287,7 @@ def main():
 
                     # Save
                     save_model_and_state()
+                total_steps += 1
 
         # Training completed - save
         save_model_and_state()
