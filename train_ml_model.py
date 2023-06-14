@@ -118,10 +118,14 @@ def main():
 
     # Set start batch size
     if args.from_state:
-        last_state_dir = max(glob(os.path.join(train_state_dir, '*/')), key=os.path.getmtime)
+        try:
+            last_state_dir = max(glob(os.path.join(train_state_dir, '*/')), key=os.path.getmtime)
+        except ValueError:
+            log_msg("Previous result train state was not found! Training is stopped!")
+            return
         start_batch_size = load_epoch_steps(os.path.join(last_state_dir, epoch_step_file))[4]
     else:
-        start_batch_size = config["training"]["batch_size"]
+        start_batch_size = config["tqraining"]["batch_size"]
 
     @find_executable_batch_size(starting_batch_size=start_batch_size)
     def inner_training_loop(batch_size, from_l_state=start_from_last_state):
