@@ -169,7 +169,7 @@ def main():
     stop_edit = False
     while True:
         page_text_path = annotations[page_idx]["text"].replace(
-            "http://localhost:8081", "../../../datasets/my_dataset/data")
+            "http://localhost:8081", "../../../datasets/poner/data")
         with open(page_text_path, encoding="utf-8") as p_f:
             page_text = p_f.read()
         page_name = annotations[page_idx]["page_name"]

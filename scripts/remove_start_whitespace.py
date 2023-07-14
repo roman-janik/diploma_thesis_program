@@ -38,7 +38,7 @@ def main():
     total_entities = 0
     for i, page in enumerate(annotations):
         page_text_path = annotations[i]["text"].replace(
-            "http://localhost:8081", "../../../datasets/my_dataset/data")
+            "http://localhost:8081", "../../../datasets/poner/data")
         with open(page_text_path, encoding="utf-8") as p_f:
             page_text = p_f.read()
 
