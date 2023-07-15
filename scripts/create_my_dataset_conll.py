@@ -56,11 +56,20 @@ def process_text_annotations(text, annotations):
         done = False
         for sentence_idx in sentences_idx:
             for word_idx in sentence_idx:
-                if word_idx["start"] >= n_entity["start"] and word_idx["end"] <= n_entity["end"] and begin:
+                if word_idx["start"] >= n_entity["start"]\
+                        and (word_idx["end"] <= n_entity["end"]
+                             or (not text[word_idx["end"]-1].isalnum()) and len(word_idx["word"]) > 1) and begin:
                     word_idx["entity_type"] = "B-" + entity_types_map[n_entity["labels"][0]]
                     begin = False
-                elif word_idx["start"] > n_entity["start"] and word_idx["end"] <= n_entity["end"]:
+                    if word_idx["end"] >= n_entity["end"]:
+                        done = True
+                        break
+                elif word_idx["start"] > n_entity["start"] and (word_idx["end"] <= n_entity["end"]
+                    or (not text[word_idx["end"]-1].isalnum() and text[word_idx["start"]].isalnum())):
                     word_idx["entity_type"] = "I-" + entity_types_map[n_entity["labels"][0]]
+                    if word_idx["end"] >= n_entity["end"]:
+                        done = True
+                        break
                 elif word_idx["end"] > n_entity["end"]:
                     done = True
                     break
@@ -88,9 +97,9 @@ def main():
 
     print("Starting documents processing...")
 
-    with open(os.path.join(args.output_dir, "my_dataset.conll"), "w", encoding="utf-8") as f:
+    with open(os.path.join(args.output_dir, "poner.conll"), "w", encoding="utf-8") as f:
         for page in annotations:
-            page_text_path = page["text"].replace("http://localhost:8081", "../../../datasets/my_dataset/data")
+            page_text_path = page["text"].replace("http://localhost:8081", "../../../datasets/poner1.0/data")
             with open(page_text_path, encoding="utf-8") as p_f:
                 page_text = p_f.read()
                 processed_page = process_text_annotations(page_text, page["ner"])
