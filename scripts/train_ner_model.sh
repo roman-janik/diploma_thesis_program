@@ -82,7 +82,7 @@ source ./env/bin/activate
 mkdir tmp
 cd program/diploma_thesis_program || exit 2
 pip install --upgrade pip
-TMPDIR=../../tmp pip install torch==1.13.1 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 -r requirements.txt
+TMPDIR=../../tmp pip install torch==2.0.0 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 -r requirements.txt
 
 # Prepare list of configurations
 if [ "$config" == "all" ]; then
