@@ -11,8 +11,8 @@ tokenizer: "../resources/tokenizers/new_tokenizer_26k"
 
 models:
   trained_model:
-    name: "Czech RoBERTa small PyTorch"
-    desc: "Czech version of own small RoBERTa transformer model. Hugging Face PyTorch type."
+    name: "Czech RoBERTa small PyTorch 8L_128H"
+    desc: "Czech version of own small RoBERTa transformer model. 8 layers, 128 hidden size. Hugging Face PyTorch type."
     config: "exp_configs_models/m_8L_128H_new_t_26k.json"
   old_model:
     name: "RobeCzech base PyTorch"
