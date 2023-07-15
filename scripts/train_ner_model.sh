@@ -116,7 +116,7 @@ do
   # Start training
   printf "Start training\n"
   if [ -z "$modelpath" ]; then
-      python train_baseline.py --config "$config_file"
+      python train_ner_model.py --config "$config_file"
       printf "Training exit code: %s\n" "$?"
   else
   #    mkdir ./logs
