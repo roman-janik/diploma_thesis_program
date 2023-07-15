@@ -49,10 +49,12 @@ cd ../..
 # Download dataset
 printf "Download dataset\n"
 mkdir datasets datasets/cnec2.0_extended datasets/chnec1.0 datasets/sumeczech-1.0-ner
-cp "$DATAPATH"/cnec2.0_extended/cnec2.0_extended.zip "$DATAPATH"/chnec1.0/chnec1.0.zip "$DATAPATH"/sumeczech-1.0-ner/sumeczech-1.0-ner.zip datasets
+cp "$DATAPATH"/cnec2.0_extended/cnec2.0_extended.zip "$DATAPATH"/chnec1.0/chnec1.0.zip "$DATAPATH"/poner1.0/poner1.0.zip datasets
+#cp "$DATAPATH"/sumeczech-1.0-ner/sumeczech-1.0-ner.zip datasets
 unzip -d datasets/cnec2.0_extended datasets/cnec2.0_extended.zip
 unzip -d datasets/chnec1.0 datasets/chnec1.0.zip
-unzip -d datasets/sumeczech-1.0-ner datasets/sumeczech-1.0-ner.zip
+#unzip -d datasets/sumeczech-1.0-ner datasets/sumeczech-1.0-ner.zip
+unzip -d datasets/poner1.0 datasets/poner1.0.zip
 
 # Download model
 printf "Download model\n"
@@ -60,6 +62,7 @@ mkdir program/resources/
 cp -r "$HOMEPATH"/program/resources/robeczech-base-pytorch program/resources/
 cp -r "$HOMEPATH"/program/resources/Czert-B-base-cased program/resources/
 cp -r "$HOMEPATH"/program/resources/Slavic-BERT-cased program/resources/
+cp -r "$HOMEPATH"/program/resources/ml_models program/resources/
 
 # Prepare directory with results
 printf "Prepare directory with results\n"
