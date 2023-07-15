@@ -52,7 +52,7 @@ for lm_config in lm_configs:
         lm_train_config = safe_load(f)
     content["model"]["name"] = lm_train_config["models"]["trained_model"]["name"]
     content["model"]["desc"] = lm_train_config["models"]["trained_model"]["desc"]
-    content["model"]["path"] = f"../resources/mlm_models/{lm_config}"
+    content["model"]["path"] = f"../resources/ml_models/{lm_config}"
 
     for dts in dts_types:
         content["datasets"] = dtss[dts]

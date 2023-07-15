@@ -26,7 +26,7 @@ model:
   desc: Czech version of own small RoBERTa transformer model. 6 layers, 256 hidden
     size. Hugging Face PyTorch type.
   name: Czech RoBERTa small PyTorch 6L_256H
-  path: ../resources/mlm_models/m_6L_256H_new_t_26k
+  path: ../resources/ml_models/m_6L_256H_new_t_26k
 training:
   batch_size: 32
   lr_scheduler:
