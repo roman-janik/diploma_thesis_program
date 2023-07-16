@@ -6,7 +6,11 @@
 #
 
 import argparse
+import csv
+import datetime
+import logging
 import os
+import time
 
 import datasets
 import transformers
@@ -14,9 +18,6 @@ import torch
 import evaluate
 import numpy as np
 import pandas as pd
-import logging
-import datetime
-import time
 
 from accelerate import Accelerator
 from tqdm.auto import tqdm
@@ -302,13 +303,37 @@ def main():
     #     os.path.join(output_dir, "model")
     # )
 
+    test_results = {}
     for (dataset_name, test_dataset) in test_datasets.items():
         test_result = task_evaluator.compute(model_or_pipeline=unwrapped_model, data=test_dataset,
                                              tokenizer=tokenizer, metric="seqeval")
+        test_results[dataset_name] = test_result
         test_result_df = pd.DataFrame(test_result).loc["number"]
         log_msg("{}:\n{}\n".format(config["datasets"][dataset_name]["name"],
                                    test_result_df[
                                        ["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]]))
+
+    try:
+        with open(os.path.join(output_dir, "exp_results.csv"), encoding="utf-8") as f:
+            f.read()
+    except FileNotFoundError:
+        with open(os.path.join(output_dir, "exp_results.csv"), "w", encoding="utf-8") as exp_f:
+            exp_res_wr = csv.writer(exp_f, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            exp_name = os.path.splitext(os.path.basename(args.config))[0]
+            dtss = "_".join(config["datasets"].keys())
+            test_cnec_f1 = "{:.6f}".format(test_results["cnec"]["overall_f1"]) if "cnec" in test_results else None
+            test_chnec_f1 = "{:.6f}".format(test_results["chnec"]["overall_f1"]) if "chnec" in test_results else None
+            test_poner_f1 = "{:.6f}".format(test_results["poner"]["overall_f1"]) if "poner" in test_results else None
+
+            exp_res_wr.writerow(["exp_name", "model_name", "datasets", "num_epochs",
+                                 "val_f1", "cnec_test_f1", "chnec_test_f1", "poner_test_f1"])
+            exp_res_wr.writerow([exp_name, config["model"]["name"], dtss,
+                                 config["training"]["num_train_epochs"], "{:.6f}".format(results["overall_f1"]),
+                                 test_cnec_f1, test_chnec_f1, test_poner_f1])
+    else:
+        with open(os.path.join(output_dir, "exp_results.csv"), "a", encoding="utf-8") as exp_f:
+            exp_res_wr = csv.writer(exp_f, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            exp_res_wr.writerow(["exp_name", ""])
 
     end_time = time.monotonic()
     log_msg("Elapsed script time: {}\n".format(datetime.timedelta(seconds=end_time - start_time)))
