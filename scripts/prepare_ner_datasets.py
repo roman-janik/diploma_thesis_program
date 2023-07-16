@@ -6,7 +6,6 @@
 import os
 
 import datasets
-import nltk
 
 
 # delete ner types media and numbers in addresses
@@ -18,12 +17,11 @@ def lower_ner_tag_types(examples):
     return examples
 
 
-nltk.download('punkt')
-
 datasets_path = "../../../datasets"
 cnec_dir = "cnec2.0_extended"
 chnec_dir = "chnec1.0"
 sumeczech_dir = "sumeczech-1.0-ner"
+poner_dir = "poner1.0"
 
 # load CNEC 2.0 CoNLL dataset with loading script
 cnec_dataset = datasets.load_dataset("cnec2_0_conll.py")
@@ -92,3 +90,10 @@ sumeczech_dataset = sumeczech_dataset.map(lower_ner_tag_types, batched=True)
 
 # save SumeCzech-NER 1.0 dataset in Hugging Face Datasets format (not tokenized)
 sumeczech_dataset.save_to_disk(os.path.join(datasets_path, sumeczech_dir))
+
+
+# load PONER 1.0 dataset with loading script
+poner_dataset = datasets.load_dataset("poner-1_0.py")
+
+# save PONER 1.0 dataset in Hugging Face Datasets format (not tokenized)
+poner_dataset.save_to_disk(os.path.join(datasets_path, poner_dir))
