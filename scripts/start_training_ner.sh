@@ -13,4 +13,4 @@ SHOUR=$(echo "$JTIMEOUT" | cut -d: -f1)
 STIME=$((SHOUR - 1))
 CONFIG=$2
 
-qsub -v branch="$BRANCHNAME",stime="$STIME",config="$CONFIG"  -l walltime="$JTIMEOUT" ./train_baseline_model.sh
+qsub -v branch="$BRANCHNAME",stime="$STIME",config="$CONFIG"  -l walltime="$JTIMEOUT" ./train_ner_model.sh
