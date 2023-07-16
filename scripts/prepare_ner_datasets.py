@@ -1,5 +1,5 @@
 # Author: Roman Janík
-# Script for preparing CNEC 2.0 CoNNL and CHNEC 1.0 datasets and converting them to Hugging Face datasets format.
+# Script for preparing NER datasets in CoNLL format and converting them to Hugging Face datasets format.
 #
 
 
