@@ -1,7 +1,7 @@
 # Author: Roman Janík
 # Script for creating NER Pero OCR LM configs. For every trained LM model there are 3 types of datasets
 # (cc - CNEC + CHNEC, po - Pero OCR NER, ccpo - CNEC + CHNEC + Pero OCR NER) and 2 lr rate + epochs combinations
-# (lr_3e5_10_epochs, lr_3e5_15_epochs).
+# (lr_3e5_40_epochs, lr_3e5_50_epochs).
 #
 
 
@@ -25,7 +25,7 @@ lm_configs = ["m_8L_128H_new_t_12k", "m_8L_128H_new_t_26k", "m_8L_128H_new_t_52k
               "m_6L_256H_new_t_12k", "m_6L_256H_new_t_26k", "m_6L_256H_new_t_52k", "m_6L_256H_old_t_52k",
               "m_8L_512H_new_t_12k", "m_8L_512H_new_t_26k", "m_8L_512H_new_t_52k", "m_8L_512H_old_t_52k"]
 dts_types = ["_dts_cc_", "_dts_po_", "_dts_ccpo_"]
-lr_rate_epochs = ["lr_3e5_10_epochs", "lr_3e5_15_epochs"]
+lr_rate_epochs = ["lr_3e5_40_epochs", "lr_3e5_50_epochs"]
 cnec_dts = {'name': 'CNEC 2.0 CoNLL', 'desc': 'Czech Named Entity Corpus 2.0 CoNNL dataset. General-language Czech '
                                               'NER dataset.', 'path': '../../datasets/cnec2.0_extended'}
 poner_dts = {"name": "PONER 1.0", "desc": "Pero OCR NER 1.0 dataset. Historic-language Czech OCR-sourced NER dataset.",
@@ -35,13 +35,13 @@ chnec_dts = {'name': 'CHNEC 1.0', 'desc': 'Czech Historical Named Entity Corpus 
 dtss = {"_dts_cc_": {"cnec": cnec_dts, "chnec": chnec_dts},
         "_dts_po_": {"poner": poner_dts},
         "_dts_ccpo_": {"cnec": cnec_dts, "chnec": chnec_dts, "poner": poner_dts}}
-num_epochs = {"lr_3e5_10_epochs": 10, "lr_3e5_15_epochs": 15}
+num_epochs = {"lr_3e5_40_epochs": 40, "lr_3e5_50_epochs": 50}
 dts_str = {"_dts_cc_": "combined CNEC and CHNEC", "_dts_po_": "PONER", "_dts_ccpo_": "combined CNEC, CHNEC and PONER"}
 batch_size = 32
 
 print("Script for creating NER Pero OCR LM configs. For every trained LM model there are 3 types of datasets (cc - "
       "CNEC + CHNEC, PONER - Pero OCR NER, ccmy - CNEC + CHNEC + Pero OCR NER) and 2 lr rate + epochs combinations ("
-      "lr_3e5_10_epochs, lr_3e5_15_epochs). "
+      "lr_3e5_40_epochs, lr_3e5_50_epochs). "
       "Based on 'linear_lr_3e5_10_epochs' config, only different values are changed.")
 
 with open(os.path.join(exp_configs_ner_dir, "linear_lr_3e5_10_epochs.yaml")) as f:
