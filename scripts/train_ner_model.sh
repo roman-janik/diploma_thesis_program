@@ -104,7 +104,6 @@ curr_date="$(date +%Y-%m-%d-%H-%M)"
 all_exp_results="$RESPATH"all_experiment_results_"$curr_date".txt
 touch "$all_exp_results"
 all_exp_results_csv="$RESPATH"all_experiment_results_"$curr_date".csv
-touch "$all_exp_results_csv"
 
 # Run training and save results for configs in list of configurations
 printf "\nPreparation took %s seconds, starting training...\n" $(($(date +%s) - start_time))

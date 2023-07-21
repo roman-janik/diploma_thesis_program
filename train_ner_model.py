@@ -314,18 +314,18 @@ def main():
                                    test_result_df[
                                        ["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]]))
 
+    # Log to CSV results file
+    exp_name = os.path.splitext(os.path.basename(args.config))[0]
+    dtss = "_".join(config["datasets"].keys())
+    test_cnec_f1 = "{:.6f}".format(test_results["cnec"]["overall_f1"]) if "cnec" in test_results else None
+    test_chnec_f1 = "{:.6f}".format(test_results["chnec"]["overall_f1"]) if "chnec" in test_results else None
+    test_poner_f1 = "{:.6f}".format(test_results["poner"]["overall_f1"]) if "poner" in test_results else None
     try:
         with open(args.results_csv, encoding="utf-8") as f:
             f.read()
     except FileNotFoundError:
         with open(args.results_csv, "w", encoding="utf-8") as exp_f:
             exp_res_wr = csv.writer(exp_f, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            exp_name = os.path.splitext(os.path.basename(args.config))[0]
-            dtss = "_".join(config["datasets"].keys())
-            test_cnec_f1 = "{:.6f}".format(test_results["cnec"]["overall_f1"]) if "cnec" in test_results else None
-            test_chnec_f1 = "{:.6f}".format(test_results["chnec"]["overall_f1"]) if "chnec" in test_results else None
-            test_poner_f1 = "{:.6f}".format(test_results["poner"]["overall_f1"]) if "poner" in test_results else None
-
             exp_res_wr.writerow(["exp_name", "model_name", "datasets", "num_epochs",
                                  "val_f1", "cnec_test_f1", "chnec_test_f1", "poner_test_f1"])
             exp_res_wr.writerow([exp_name, config["model"]["name"], dtss,
@@ -334,7 +334,9 @@ def main():
     else:
         with open(args.results_csv, "a", encoding="utf-8") as exp_f:
             exp_res_wr = csv.writer(exp_f, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            exp_res_wr.writerow(["exp_name", ""])
+            exp_res_wr.writerow([exp_name, config["model"]["name"], dtss,
+                                 config["training"]["num_train_epochs"], "{:.6f}".format(results["overall_f1"]),
+                                 test_cnec_f1, test_chnec_f1, test_poner_f1])
 
     end_time = time.monotonic()
     log_msg("Elapsed script time: {}\n".format(datetime.timedelta(seconds=end_time - start_time)))
