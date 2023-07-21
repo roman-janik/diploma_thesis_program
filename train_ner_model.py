@@ -28,6 +28,7 @@ from torch.utils.tensorboard import SummaryWriter
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', required=True, help='Training configuration file.')
+    parser.add_argument('--results_csv', required=True, help='Results CSV file.')
     args = parser.parse_args()
     return args
 
@@ -314,10 +315,10 @@ def main():
                                        ["overall_f1", "overall_accuracy", "overall_precision", "overall_recall"]]))
 
     try:
-        with open(os.path.join(output_dir, "exp_results.csv"), encoding="utf-8") as f:
+        with open(args.results_csv, encoding="utf-8") as f:
             f.read()
     except FileNotFoundError:
-        with open(os.path.join(output_dir, "exp_results.csv"), "w", encoding="utf-8") as exp_f:
+        with open(args.results_csv, "w", encoding="utf-8") as exp_f:
             exp_res_wr = csv.writer(exp_f, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
             exp_name = os.path.splitext(os.path.basename(args.config))[0]
             dtss = "_".join(config["datasets"].keys())
@@ -331,7 +332,7 @@ def main():
                                  config["training"]["num_train_epochs"], "{:.6f}".format(results["overall_f1"]),
                                  test_cnec_f1, test_chnec_f1, test_poner_f1])
     else:
-        with open(os.path.join(output_dir, "exp_results.csv"), "a", encoding="utf-8") as exp_f:
+        with open(args.results_csv, "a", encoding="utf-8") as exp_f:
             exp_res_wr = csv.writer(exp_f, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
             exp_res_wr.writerow(["exp_name", ""])
 

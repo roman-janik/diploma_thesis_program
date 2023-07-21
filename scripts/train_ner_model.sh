@@ -99,9 +99,12 @@ else
   done)
 fi
 
-# Create all experiment results file
-all_exp_results="$RESPATH"all_experiment_results_"$(date +%Y-%m-%d-%H-%M)".txt
+# Create all experiment results files
+curr_date="$(date +%Y-%m-%d-%H-%M)"
+all_exp_results="$RESPATH"all_experiment_results_"$curr_date".txt
 touch "$all_exp_results"
+all_exp_results_csv="$RESPATH"all_experiment_results_"$curr_date".csv
+touch "$all_exp_results_csv"
 
 # Run training and save results for configs in list of configurations
 printf "\nPreparation took %s seconds, starting training...\n" $(($(date +%s) - start_time))
@@ -116,7 +119,7 @@ do
   # Start training
   printf "Start training\n"
   if [ -z "$modelpath" ]; then
-      python train_ner_model.py --config "$config_file"
+      python train_ner_model.py --config "$config_file" --results_csv "$all_exp_results_csv"
       printf "Training exit code: %s\n" "$?"
   else
   #    mkdir ./logs
