@@ -16,19 +16,23 @@ datasets:
       dataset.
     name: CNEC 2.0 CoNLL
     path: ../../datasets/cnec2.0_extended
+  poner:
+    desc: Pero OCR NER 1.0 dataset. Historic-language Czech OCR-sourced NER dataset.
+    name: PONER 1.0
+    path: ../../datasets/poner1.0
 desc: NER Pero OCR LM model. Learning rate set to 3e-5. Learning rate scheduler is
-  linear, training 50 epochs on combined CNEC and CHNEC.
+  linear, training 40 epochs on combined CNEC, CHNEC and PONER.
 model:
-  desc: Czech version of own small RoBERTa transformer model. 8 layers, 128 hidden
+  desc: Czech version of own small RoBERTa transformer model. 4 layers, 512 hidden
     size. Hugging Face PyTorch type.
-  name: Czech RoBERTa small PyTorch 8L_128H
-  path: ../resources/ml_models/m_8L_128H_new_t_12k
+  name: Czech RoBERTa small PyTorch 4L_512H
+  path: ../resources/ml_models/m_4L_512H_new_t_26k
 training:
   batch_size: 32
   lr_scheduler:
     name: linear
     warmup_ratio: 0.0
-  num_train_epochs: 50
+  num_train_epochs: 40
   optimizer:
     beta1: 0.9
     beta2: 0.999

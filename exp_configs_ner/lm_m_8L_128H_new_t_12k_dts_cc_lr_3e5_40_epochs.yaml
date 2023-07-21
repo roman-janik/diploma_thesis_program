@@ -17,7 +17,7 @@ datasets:
     name: CNEC 2.0 CoNLL
     path: ../../datasets/cnec2.0_extended
 desc: NER Pero OCR LM model. Learning rate set to 3e-5. Learning rate scheduler is
-  linear, training 10 epochs on combined CNEC and CHNEC.
+  linear, training 40 epochs on combined CNEC and CHNEC.
 model:
   desc: Czech version of own small RoBERTa transformer model. 8 layers, 128 hidden
     size. Hugging Face PyTorch type.

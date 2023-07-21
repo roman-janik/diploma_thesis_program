@@ -22,7 +22,7 @@ model:
   desc: Czech version of own small RoBERTa transformer model. 8 layers, 128 hidden
     size. Hugging Face PyTorch type.
   name: Czech RoBERTa small PyTorch 8L_128H
-  path: ../resources/ml_models/m_8L_128H_new_t_12k
+  path: ../resources/ml_models/m_8L_128H_new_t_26k
 training:
   batch_size: 32
   lr_scheduler:

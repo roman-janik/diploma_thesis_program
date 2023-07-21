@@ -6,23 +6,17 @@
 #  Datasets are preprocessed to Hugging Face arrow format
 
 datasets:
-  chnec:
-    desc: Czech Historical Named Entity Corpus 1.0 dataset. Historic-language Czech
-      NER dataset.
-    name: CHNEC 1.0
-    path: ../../datasets/chnec1.0
-  cnec:
-    desc: Czech Named Entity Corpus 2.0 CoNNL dataset. General-language Czech NER
-      dataset.
-    name: CNEC 2.0 CoNLL
-    path: ../../datasets/cnec2.0_extended
+  poner:
+    desc: Pero OCR NER 1.0 dataset. Historic-language Czech OCR-sourced NER dataset.
+    name: PONER 1.0
+    path: ../../datasets/poner1.0
 desc: NER Pero OCR LM model. Learning rate set to 3e-5. Learning rate scheduler is
-  linear, training 50 epochs on combined CNEC and CHNEC.
+  linear, training 50 epochs on PONER.
 model:
   desc: Czech version of own small RoBERTa transformer model. 8 layers, 128 hidden
     size. Hugging Face PyTorch type.
   name: Czech RoBERTa small PyTorch 8L_128H
-  path: ../resources/ml_models/m_8L_128H_new_t_12k
+  path: ../resources/ml_models/m_8L_128H_old_t_52k
 training:
   batch_size: 32
   lr_scheduler:

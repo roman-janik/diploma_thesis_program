@@ -19,10 +19,10 @@ datasets:
 desc: NER Pero OCR LM model. Learning rate set to 3e-5. Learning rate scheduler is
   linear, training 50 epochs on combined CNEC and CHNEC.
 model:
-  desc: Czech version of own small RoBERTa transformer model. 8 layers, 128 hidden
+  desc: Czech version of own small RoBERTa transformer model. 6 layers, 256 hidden
     size. Hugging Face PyTorch type.
-  name: Czech RoBERTa small PyTorch 8L_128H
-  path: ../resources/ml_models/m_8L_128H_new_t_12k
+  name: Czech RoBERTa small PyTorch 6L_256H
+  path: ../resources/ml_models/m_6L_256H_old_t_52k
 training:
   batch_size: 32
   lr_scheduler:
