@@ -81,7 +81,7 @@ def align_labels_with_tokens(labels, word_ids):
 
 def prepare_datasets(config: dict):
     raw_datasets = {key: datasets.load_from_disk(value["path"]) for (key, value) in config["datasets"].items()}
-    label_names = raw_datasets["cnec"]["train"].features["ner_tags"].feature.names
+    label_names = ['O', 'B-p', 'I-p', 'B-i', 'I-i', 'B-g', 'I-g', 'B-t', 'I-t', 'B-o', 'I-o']
 
     # concatenate datasets
     concat_dataset_train = datasets.concatenate_datasets(
