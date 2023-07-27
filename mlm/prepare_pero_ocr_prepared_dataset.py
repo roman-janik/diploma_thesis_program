@@ -1,5 +1,5 @@
 # Author: Roman Janík
-# Script for preparing Pero OCR prepared dataset from Pero OCR Books and Pero OCR Periodicals datasets.
+# Script for preparing Pero OCR MLM dataset from Pero OCR Books and Pero OCR Periodicals datasets.
 # Dataset is tokenized, then concatenated and chunked by model input size. Result is a dataset ready for training.
 #
 
