@@ -31,7 +31,7 @@ https://pero-ocr.fit.vutbr.cz
 # pero_ocr_periodicals dataset info
 PERIODICALS_VERSION = Version("1.0.0")
 PERIODICALS_DESCRIPTION = """
-Pero OCR Periodicals contains scanned and OCR-processed pages of books from PERO-OCR project. Pages are filtered
+Pero OCR Periodicals contains scanned and OCR-processed pages of periodicals from PERO-OCR project. Pages are filtered
 by OCR model confidence outputs. Confidence of each paragraph / ocr-region is calculated from line confidences.
 Paragraphs with confidence <= 0.65 were filtered out. Pages with total lines <= 8 were filtered out too.
 
