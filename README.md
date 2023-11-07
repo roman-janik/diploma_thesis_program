@@ -60,5 +60,19 @@ python train_tokenizer.py --new_tokenizer_dir <dir> --dataset_dirs <dir> --vocab
 ```
 
 ### Citation
-    JANÍK, Roman. Document Information Extraction. Brno, 2023. Master’s thesis. Brno
-    University of Technology, Faculty of Information Technology. Supervisor Ing. Michal Hradiš, Ph.D.
+Original thesis is available at:
+[Document Information Extraction](https://dspace.vutbr.cz/handle/11012/213801?locale-attribute=en).
+Please cite as:
+
+```
+@mastersthesis{janik-2023-document-information-extraction,
+    title = "Document Information Extraction",
+    author = "Janík, Roman",
+    language = "eng",
+    year = "2023",
+    school = "Brno University of Technology, Faculty of Information Technology",
+    url = "https://dspace.vutbr.cz/handle/11012/213801?locale-attribute=en",
+    type = "Master’s thesis",
+    note = "Supervisor Ing. Michal Hradiš, Ph.D."
+}
+```
